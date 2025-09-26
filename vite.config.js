@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://vegbazar.cloud",
+        target: "https://vegbazar.cloud",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },

@@ -14,7 +14,9 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
       const {isLoggedIn,setIsLoggedIn} = useContext(AuthContext)
-
+        const handleRegister = () =>{
+            navigate("/register")
+        }
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -318,6 +320,7 @@ const Login = () => {
                                 Forgot Password?
                             </button>
                             <button
+                               onClick={handleRegister}
                                 type="button"
                                 className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
                             >
