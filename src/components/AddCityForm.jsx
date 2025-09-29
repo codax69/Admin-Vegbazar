@@ -102,7 +102,7 @@ const AddCityForm = () => {
     };
 
     try {
-      await axios.put(`/api/cities/${editingCity}`, updateData);
+      await axios.patch(`/api/cities/${editingCity}`, updateData);
       alert("✅ City updated successfully!");
       setEditingCity(null);
       setEditCity("");

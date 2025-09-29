@@ -84,7 +84,7 @@ const OfferPanel = () => {
     }
 
     try {
-      await axios.put(`${import.meta.env.VITE_API_SERVER_URL}/api/offers/${selectedOffer._id}`, {
+      await axios.patch(`${import.meta.env.VITE_API_SERVER_URL}/api/offers/${selectedOffer._id}`, {
         ...selectedOffer,
         price: Number(newPrice),
       });

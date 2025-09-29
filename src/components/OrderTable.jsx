@@ -31,51 +31,7 @@ const OrderTable = () => {
     setOrders(formattedOrders);
   };
 
-  // const orders = [
-  //     {
-  //         orderId: 'ORD1756109117481',
-  //         date: '25/08/2025 13:35:17',
-  //         customerName: 'Yogeshkumar Kanubhai Patel',
-  //         email: 'ykpmaths@gmail.com',
-  //         phone: '9408408072',
-  //         address: 'gdfgd',
-  //         state: 'Gujarat',
-  //         city: 'Surat',
-  //         package: 'Basic Pack',
-  //         amount: 100,
-  //         status: 'Pending',
-  //         items: ['Spinach', 'Tomato', 'Onion', 'Broccoli', 'Bell Pepper']
-  //     },
-  //     {
-  //         orderId: 'ORD1756109117482',
-  //         date: '24/08/2025 10:22:45',
-  //         customerName: 'Priya Sharma',
-  //         email: 'priya.sharma@gmail.com',
-  //         phone: '9876543210',
-  //         address: '123 Main Street',
-  //         state: 'Gujarat',
-  //         city: 'Ahmedabad',
-  //         package: 'Premium Pack',
-  //         amount: 250,
-  //         status: 'Delivered',
-  //         items: ['Cauliflower', 'Carrot', 'Cucumber', 'Lettuce']
-  //     },
-  //     {
-  //         orderId: 'ORD1756109117483',
-  //         date: '23/08/2025 16:45:12',
-  //         customerName: 'Rajesh Kumar',
-  //         email: 'rajesh.k@yahoo.com',
-  //         phone: '8765432109',
-  //         address: '456 Garden Road',
-  //         state: 'Gujarat',
-  //         city: 'Vadodara',
-  //         package: 'Standard Pack',
-  //         amount: 175,
-  //         status: 'Processing',
-  //         items: ['Potato', 'Onion', 'Ginger', 'Green Chili']
-  //     }
-  // ];
-  useEffect(() => {
+    useEffect(() => {
     OrdersApiCall();
   }, []);
 
