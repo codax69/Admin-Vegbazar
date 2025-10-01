@@ -84,7 +84,6 @@ const Login = () => {
         `${import.meta.env.VITE_API_SERVER_URL}/api/auth/login`,
         formData
       );
-      console.log("Login successful:", response.data.ace);
       setIsLoggedIn(true);
       startLoading();
       // Store authentication data
