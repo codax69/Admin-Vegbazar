@@ -29,7 +29,6 @@ const Dashboard = () => {
     startLoading();
     try {
       const [userRes, vegRes, offerRes, orderRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/auth/get-user`),
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/vegetables`),
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/offers`),
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/orders`),
