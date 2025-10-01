@@ -37,8 +37,6 @@ function App() {
       if (response.data.success) {
         Navigate("/");
       }
-
-      console.log("✅ User is logged in:", response.data);
       setIsLoggedIn(true);
     } catch (error) {
       console.log(`❌ Please Login First >> ${error.message}`);
