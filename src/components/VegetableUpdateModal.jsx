@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
+import { useLoading } from "../context/loadingContext";
 const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
+  const {startLoading, stopLoading} = useLoading();
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -62,7 +63,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
       setError(validationErrors.join(", "));
       return;
     }
-
+    startLoading()
     setLoading(true);
     setError(null);
 
@@ -93,6 +94,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
       );
     } finally {
       setLoading(false);
+      stopLoading();
     }
   };
 

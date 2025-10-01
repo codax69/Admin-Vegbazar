@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useLoading } from "../context/loadingContext";
 
 const AddCityForm = () => {
+  const { startLoading, stopLoading } = useLoading();
   const [city, setCity] = useState("");
   const [areas, setAreas] = useState([""]);
   const [cities, setCities] = useState([]);
@@ -10,19 +12,23 @@ const AddCityForm = () => {
   const [editingCity, setEditingCity] = useState(null);
   const [editCity, setEditCity] = useState("");
   const [editAreas, setEditAreas] = useState([]);
-  
+
   // Fetch cities from server
   const fetchCities = async () => {
     setLoading(true);
+    startLoading();
     setError("");
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/cities/`);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_SERVER_URL}/api/cities/`
+      );
       setCities(response.data);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch cities");
     } finally {
       setLoading(false);
+      stopLoading();
     }
   };
 
@@ -49,7 +55,11 @@ const AddCityForm = () => {
     };
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_SERVER_URL}/api/cities/add`, formData);
+      startLoading();
+      await axios.post(
+        `${import.meta.env.VITE_API_SERVER_URL}/api/cities/add`,
+        formData
+      );
       alert("✅ City added successfully!");
       setCity("");
       setAreas([""]);
@@ -57,18 +67,25 @@ const AddCityForm = () => {
     } catch (err) {
       console.error(err);
       alert("❌ Error adding city");
+    } finally {
+      stopLoading();
     }
   };
 
   const handleDeleteCity = async (cityId) => {
     if (window.confirm("Are you sure you want to delete this city?")) {
       try {
-        await axios.delete(`${import.meta.env.VITE_API_SERVER_URL}/api/cities/${cityId}`);
+        startLoading();
+        await axios.delete(
+          `${import.meta.env.VITE_API_SERVER_URL}/api/cities/${cityId}`
+        );
         alert("✅ City deleted successfully!");
         fetchCities();
       } catch (err) {
         console.error(err);
         alert("❌ Error deleting city");
+      } finally {
+        stopLoading();
       }
     }
   };
@@ -186,7 +203,9 @@ const AddCityForm = () => {
       {/* Cities Display */}
       <div className="bg-white p-6 rounded-2xl shadow-lg border border-green-200">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-green-600">🏙️ Cities & Areas</h2>
+          <h2 className="text-2xl font-bold text-green-600">
+            🏙️ Cities & Areas
+          </h2>
           <button
             onClick={fetchCities}
             className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition duration-200 text-sm font-medium"
@@ -203,7 +222,9 @@ const AddCityForm = () => {
 
         {loading ? (
           <div className="text-center py-8">
-            <div className="animate-pulse text-green-500">Loading cities...</div>
+            <div className="animate-pulse text-green-500">
+              Loading cities...
+            </div>
           </div>
         ) : cities.length === 0 ? (
           <div className="text-center py-8 text-green-500">
@@ -249,7 +270,10 @@ const AddCityForm = () => {
                         Areas
                       </label>
                       {editAreas.map((area, areaIndex) => (
-                        <div key={areaIndex} className="flex items-center gap-1 mb-1">
+                        <div
+                          key={areaIndex}
+                          className="flex items-center gap-1 mb-1"
+                        >
                           <input
                             type="text"
                             value={area}
@@ -380,7 +404,9 @@ const AddCityForm = () => {
                   0
                 )}
               </div>
-              <div className="text-sm text-blue-700 font-medium">Total Areas</div>
+              <div className="text-sm text-blue-700 font-medium">
+                Total Areas
+              </div>
             </div>
             <div className="w-px h-12 bg-blue-300"></div>
             <div className="bg-white p-4 rounded-lg shadow-sm">

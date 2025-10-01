@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { X, Plus, Check, Package, DollarSign } from 'lucide-react';
+import { X, Plus, Check, Package, DollarSign } from "lucide-react";
+import { useLoading } from "../context/loadingContext";
 
 const OfferPanel = () => {
+  const { startLoading, stopLoading } = useLoading();
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [newPrice, setNewPrice] = useState("");
   const [offers, setOffers] = useState([]);
@@ -13,7 +15,7 @@ const OfferPanel = () => {
     price: "",
     description: "",
     vegetableLimit: "",
-    selectedVegetables: []
+    selectedVegetables: [],
   });
 
   // Vegetable selection states
@@ -27,33 +29,43 @@ const OfferPanel = () => {
     all: "All Categories",
     1: "Fresh Vegetables",
     2: "Leafy Greens",
-    3: "Root Vegetables", 
+    3: "Root Vegetables",
     4: "Exotic Vegetables",
-    5: "Organic Vegetables"
+    5: "Organic Vegetables",
   };
 
   // Fetch offers from API
   const offersApiCall = async () => {
+    startLoading();
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/offers`);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_SERVER_URL}/api/offers`
+      );
       setOffers(response.data.data || response.data);
     } catch (error) {
       console.error("Error fetching offers:", error);
       alert("Failed to fetch offers");
+    }
+    {
+      stopLoading();
     }
   };
 
   // Fetch vegetables from server
   const fetchVegetables = async () => {
     try {
+      startLoading();
       setLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/vegetables`);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables`
+      );
       setVegetables(response.data.data);
     } catch (error) {
-      console.error('Error fetching vegetables:', error);
+      console.error("Error fetching vegetables:", error);
       // Fallback to mock data matching your schema
     } finally {
       setLoading(false);
+      stopLoading();
     }
   };
 
@@ -82,12 +94,17 @@ const OfferPanel = () => {
       alert("Please enter a valid price!");
       return;
     }
-
+    startLoading();
     try {
-      await axios.patch(`${import.meta.env.VITE_API_SERVER_URL}/api/offers/${selectedOffer._id}`, {
-        ...selectedOffer,
-        price: Number(newPrice),
-      });
+      await axios.patch(
+        `${import.meta.env.VITE_API_SERVER_URL}/api/offers/${
+          selectedOffer._id
+        }`,
+        {
+          ...selectedOffer,
+          price: Number(newPrice),
+        }
+      );
 
       // Update local state
       setOffers((prevOffers) =>
@@ -104,42 +121,51 @@ const OfferPanel = () => {
     } catch (error) {
       console.error("Error updating offer:", error);
       alert("Failed to update offer");
+    } finally {
+      stopLoading();
     }
   };
 
   // Filter vegetables based on search term and category
-  const filteredVegetables = vegetables.filter(veg => {
-    const matchesSearch = veg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (veg.description && veg.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesCategory = selectedCategory === "all" || 
-                           veg.screenNumber === parseInt(selectedCategory);
-    
+  const filteredVegetables = vegetables.filter((veg) => {
+    const matchesSearch =
+      veg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (veg.description &&
+        veg.description.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const matchesCategory =
+      selectedCategory === "all" ||
+      veg.screenNumber === parseInt(selectedCategory);
+
     const hasStock = veg.stockKg > 0;
-    
+
     return matchesSearch && matchesCategory && hasStock;
   });
 
   // Handle vegetable selection/deselection
   const handleVegetableSelect = (vegetable) => {
-    const isSelected = newOffer.selectedVegetables.some(v => v._id === vegetable._id);
+    const isSelected = newOffer.selectedVegetables.some(
+      (v) => v._id === vegetable._id
+    );
     const vegetableLimit = parseInt(newOffer.vegetableLimit) || Infinity;
-    
+
     if (isSelected) {
       // Remove vegetable
-      setNewOffer(prev => ({
+      setNewOffer((prev) => ({
         ...prev,
-        selectedVegetables: prev.selectedVegetables.filter(v => v._id !== vegetable._id)
+        selectedVegetables: prev.selectedVegetables.filter(
+          (v) => v._id !== vegetable._id
+        ),
       }));
     } else {
       // Add vegetable if limit allows
       if (newOffer.selectedVegetables.length < vegetableLimit * 2) {
-        setNewOffer(prev => ({
+        setNewOffer((prev) => ({
           ...prev,
-          selectedVegetables: [...prev.selectedVegetables, vegetable]
+          selectedVegetables: [...prev.selectedVegetables, vegetable],
         }));
       } else {
-        alert(`You can only select up to ${vegetableLimit *2 } vegetables.`);
+        alert(`You can only select up to ${vegetableLimit * 2} vegetables.`);
       }
     }
   };
@@ -147,15 +173,15 @@ const OfferPanel = () => {
   // Handle form submission
   const handleAddOffer = async (e) => {
     e.preventDefault();
-    
+
     // Validation
     if (!newOffer.id || !newOffer.title || !newOffer.price) {
-      alert('Please fill in all required fields (ID, Title, Price)');
+      alert("Please fill in all required fields (ID, Title, Price)");
       return;
     }
 
     if (newOffer.selectedVegetables.length === 0) {
-      alert('Please select at least one vegetable');
+      alert("Please select at least one vegetable");
       return;
     }
 
@@ -171,25 +197,28 @@ const OfferPanel = () => {
       price: parseFloat(newOffer.price),
       description: newOffer.description,
       vegetableLimit: parseInt(newOffer.vegetableLimit) || null,
-      vegetables: newOffer.selectedVegetables.map(v => v._id) // Send MongoDB ObjectIds
+      vegetables: newOffer.selectedVegetables.map((v) => v._id), // Send MongoDB ObjectIds
     };
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_SERVER_URL}/api/offers/add`, offerData);
-      
+      await axios.post(
+        `${import.meta.env.VITE_API_SERVER_URL}/api/offers/add`,
+        offerData
+      );
+
       // Add to local state
       const newOfferWithVegetables = {
         ...offerData,
-        vegetables: newOffer.selectedVegetables.map(v => v.name) // For display
+        vegetables: newOffer.selectedVegetables.map((v) => v.name), // For display
       };
       setOffers((prevOffers) => [...prevOffers, newOfferWithVegetables]);
 
       // Reset form
       resetForm();
-      alert('Offer created successfully!');
+      alert("Offer created successfully!");
     } catch (error) {
-      console.error('Error creating offer:', error);
-      alert('Error creating offer. Please try again.');
+      console.error("Error creating offer:", error);
+      alert("Error creating offer. Please try again.");
     }
   };
 
@@ -201,7 +230,7 @@ const OfferPanel = () => {
       price: "",
       description: "",
       vegetableLimit: "",
-      selectedVegetables: []
+      selectedVegetables: [],
     });
     setShowAddForm(false);
     setSearchTerm("");
@@ -210,16 +239,21 @@ const OfferPanel = () => {
 
   // Handle offer deletion
   const handleDeleteOffer = async (id) => {
+    startLoading();
     try {
-      await axios.delete(`${import.meta.env.VITE_API_SERVER_URL}/api/offers/${id}`);
+      await axios.delete(
+        `${import.meta.env.VITE_API_SERVER_URL}/api/offers/${id}`
+      );
       alert("Offer deleted successfully ✅");
       offersApiCall(); // Refresh list after delete
     } catch (error) {
       console.error("Error deleting offer:", error);
       alert("Failed to delete offer ❌");
+    } finally {
+      stopLoading();
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
@@ -246,7 +280,10 @@ const OfferPanel = () => {
               </li>
             ) : (
               offers.map((offer) => (
-                <li key={offer._id || offer.id} className="px-6 py-4 hover:bg-gray-50">
+                <li
+                  key={offer._id || offer.id}
+                  className="px-6 py-4 hover:bg-gray-50"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="text-sm font-medium text-gray-900">
@@ -256,14 +293,15 @@ const OfferPanel = () => {
                         {offer.description}
                       </p>
                       <p className="text-sm text-gray-500">₹{offer.price}</p>
-                         <p className="text-xs text-gray-400">
-          Vegetables:{" "}
-          {Array.isArray(offer.vegetables) && offer.vegetables.length > 0
-            ? offer.vegetables
-                .map((veg) => veg.name || veg) // handle both populated objects & plain strings
-                .join(", ")
-            : "N/A"}
-        </p>
+                      <p className="text-xs text-gray-400">
+                        Vegetables:{" "}
+                        {Array.isArray(offer.vegetables) &&
+                        offer.vegetables.length > 0
+                          ? offer.vegetables
+                              .map((veg) => veg.name || veg) // handle both populated objects & plain strings
+                              .join(", ")
+                          : "N/A"}
+                      </p>
                       {offer.vegetableLimit && (
                         <p className="text-xs text-blue-500">
                           Limit: {offer.vegetableLimit} vegetables
@@ -367,7 +405,9 @@ const OfferPanel = () => {
                         <input
                           type="number"
                           value={newOffer.id}
-                          onChange={(e) => setNewOffer({ ...newOffer, id: e.target.value })}
+                          onChange={(e) =>
+                            setNewOffer({ ...newOffer, id: e.target.value })
+                          }
                           className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                           placeholder="Enter offer ID"
                           required
@@ -381,7 +421,9 @@ const OfferPanel = () => {
                           type="number"
                           step="0.01"
                           value={newOffer.price}
-                          onChange={(e) => setNewOffer({ ...newOffer, price: e.target.value })}
+                          onChange={(e) =>
+                            setNewOffer({ ...newOffer, price: e.target.value })
+                          }
                           className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                           placeholder="₹0.00"
                           required
@@ -397,7 +439,9 @@ const OfferPanel = () => {
                       <input
                         type="text"
                         value={newOffer.title}
-                        onChange={(e) => setNewOffer({ ...newOffer, title: e.target.value })}
+                        onChange={(e) =>
+                          setNewOffer({ ...newOffer, title: e.target.value })
+                        }
                         className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         placeholder="Enter offer title"
                         required
@@ -413,7 +457,12 @@ const OfferPanel = () => {
                         type="number"
                         min="1"
                         value={newOffer.vegetableLimit}
-                        onChange={(e) => setNewOffer({ ...newOffer, vegetableLimit: e.target.value })}
+                        onChange={(e) =>
+                          setNewOffer({
+                            ...newOffer,
+                            vegetableLimit: e.target.value,
+                          })
+                        }
                         className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         placeholder="Maximum vegetables allowed"
                       />
@@ -429,7 +478,12 @@ const OfferPanel = () => {
                       </label>
                       <textarea
                         value={newOffer.description}
-                        onChange={(e) => setNewOffer({ ...newOffer, description: e.target.value })}
+                        onChange={(e) =>
+                          setNewOffer({
+                            ...newOffer,
+                            description: e.target.value,
+                          })
+                        }
                         className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         rows="3"
                         placeholder="Describe your offer..."
@@ -444,11 +498,14 @@ const OfferPanel = () => {
                     {newOffer.selectedVegetables.length > 0 && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Selected Vegetables ({newOffer.selectedVegetables.length}
-                          {newOffer.vegetableLimit && `/${newOffer.vegetableLimit}`})
+                          Selected Vegetables (
+                          {newOffer.selectedVegetables.length}
+                          {newOffer.vegetableLimit &&
+                            `/${newOffer.vegetableLimit}`}
+                          )
                         </label>
                         <div className="flex flex-wrap gap-2">
-                          {newOffer.selectedVegetables.map(veg => (
+                          {newOffer.selectedVegetables.map((veg) => (
                             <span
                               key={veg._id}
                               className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center gap-1"
@@ -502,7 +559,7 @@ const OfferPanel = () => {
                         className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       />
                     </div>
-                    
+
                     {/* Category Filter */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -514,7 +571,9 @@ const OfferPanel = () => {
                         className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       >
                         {Object.entries(categories).map(([value, label]) => (
-                          <option key={value} value={value}>{label}</option>
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -523,73 +582,99 @@ const OfferPanel = () => {
                   {loading ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-                      <span className="ml-2 text-gray-600">Loading vegetables...</span>
+                      <span className="ml-2 text-gray-600">
+                        Loading vegetables...
+                      </span>
                     </div>
                   ) : (
                     <div className="space-y-2 max-h-96 overflow-y-auto">
                       {filteredVegetables.length === 0 ? (
-                        <p className="text-gray-500 text-center py-4">No vegetables found</p>
+                        <p className="text-gray-500 text-center py-4">
+                          No vegetables found
+                        </p>
                       ) : (
-                        filteredVegetables.map(vegetable => {
-                          const isSelected = newOffer.selectedVegetables.some(v => v._id === vegetable._id);
-                          const isDisabled = vegetable.stockKg === 0 || 
-                            (!isSelected && newOffer.vegetableLimit * 2 && 
-                             newOffer.selectedVegetables.length >= parseInt(newOffer.vegetableLimit * 2));
+                        filteredVegetables.map((vegetable) => {
+                          const isSelected = newOffer.selectedVegetables.some(
+                            (v) => v._id === vegetable._id
+                          );
+                          const isDisabled =
+                            vegetable.stockKg === 0 ||
+                            (!isSelected &&
+                              newOffer.vegetableLimit * 2 &&
+                              newOffer.selectedVegetables.length >=
+                                parseInt(newOffer.vegetableLimit * 2));
 
                           return (
                             <div
                               key={vegetable._id}
                               className={`p-4 rounded-lg border cursor-pointer transition-all ${
                                 isSelected
-                                  ? 'bg-green-100 border-green-500 shadow-sm'
+                                  ? "bg-green-100 border-green-500 shadow-sm"
                                   : isDisabled
-                                  ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-60'
-                                  : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
+                                  ? "bg-gray-100 border-gray-200 cursor-not-allowed opacity-60"
+                                  : "bg-white border-gray-200 hover:border-green-300 hover:shadow-sm"
                               }`}
-                              onClick={() => !isDisabled && handleVegetableSelect(vegetable)}
+                              onClick={() =>
+                                !isDisabled && handleVegetableSelect(vegetable)
+                              }
                             >
                               <div className="flex items-start gap-3">
                                 {/* Vegetable Image */}
                                 <img
-                                  src={vegetable.image || '/api/placeholder/60/60'}
+                                  src={
+                                    vegetable.image || "/api/placeholder/60/60"
+                                  }
                                   alt={vegetable.name}
                                   className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
                                   onError={(e) => {
-                                    e.target.src = '/api/placeholder/60/60';
+                                    e.target.src = "/api/placeholder/60/60";
                                   }}
                                 />
-                                
+
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between mb-1">
-                                    <h4 className="font-medium text-gray-900 truncate">{vegetable.name}</h4>
-                                    {isSelected && <Check size={16} className="text-green-600 flex-shrink-0" />}
+                                    <h4 className="font-medium text-gray-900 truncate">
+                                      {vegetable.name}
+                                    </h4>
+                                    {isSelected && (
+                                      <Check
+                                        size={16}
+                                        className="text-green-600 flex-shrink-0"
+                                      />
+                                    )}
                                   </div>
-                                  
+
                                   <p className="text-xs text-gray-500 mb-2">
-                                    {categories[vegetable.screenNumber] || 'Category ' + vegetable.screenNumber}
+                                    {categories[vegetable.screenNumber] ||
+                                      "Category " + vegetable.screenNumber}
                                   </p>
-                                  
+
                                   {vegetable.description && (
                                     <p className="text-sm text-gray-600 mb-2 line-clamp-2">
                                       {vegetable.description}
                                     </p>
                                   )}
-                                  
+
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                       <span className="text-sm font-medium text-green-600 flex items-center gap-1">
-                                        <DollarSign size={12} />
-                                        ₹{vegetable.price}/kg
+                                        <DollarSign size={12} />₹
+                                        {vegetable.price}/kg
                                       </span>
-                                      <span className={`text-xs flex items-center gap-1 ${
-                                        vegetable.stockKg > 10 ? 'text-green-600' : 
-                                        vegetable.stockKg > 0 ? 'text-yellow-600' : 'text-red-600'
-                                      }`}>
+                                      <span
+                                        className={`text-xs flex items-center gap-1 ${
+                                          vegetable.stockKg > 10
+                                            ? "text-green-600"
+                                            : vegetable.stockKg > 0
+                                            ? "text-yellow-600"
+                                            : "text-red-600"
+                                        }`}
+                                      >
                                         <Package size={12} />
                                         {vegetable.stockKg}kg stock
                                       </span>
                                     </div>
-                                    
+
                                     {vegetable.offer && (
                                       <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
                                         {vegetable.offer}

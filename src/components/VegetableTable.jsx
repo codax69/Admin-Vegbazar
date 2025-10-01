@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import VegetableUpdateModal from "./VegetableUpdateModal";
+import { useLoading } from "../context/loadingContext";
 
 const VegetableTable = () => {
   const [vegetables, setVegetables] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+  const {startLoading,stopLoading}=useLoading()
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedVegetable, setSelectedVegetable] = useState(null);
 
   const VegetableApiCall = async () => {
     try {
+      startLoading()
       setLoading(true);
       setError(null);
       const response = await axios.get(
@@ -24,6 +26,7 @@ const VegetableTable = () => {
       setError("Failed to fetch vegetables");
     } finally {
       setLoading(false);
+      stopLoading()
     }
   };
 
@@ -31,7 +34,7 @@ const VegetableTable = () => {
     if (!window.confirm("Are you sure you want to delete this vegetable?")) {
       return;
     }
-
+    startLoading()
     try {
       await axios.delete(
         `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${id}`
@@ -42,6 +45,8 @@ const VegetableTable = () => {
       setError(
         `Delete failed: ${error.response?.data?.message || error.message}`
       );
+    } finally {
+      stopLoading()
     }
   };
 
@@ -71,7 +76,7 @@ const VegetableTable = () => {
       setError("Stock cannot be negative");
       return;
     }
-
+    startLoading()
     try {
       await axios.patch(
         `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${id}`,
@@ -83,6 +88,8 @@ const VegetableTable = () => {
       setError(
         `Stock update failed: ${error.response?.data?.message || error.message}`
       );
+    }finally{
+      stopLoading()
     }
   };
 
@@ -94,7 +101,7 @@ const VegetableTable = () => {
     return (
       <div className="bg-white p-8 rounded-lg shadow-lg">
         <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0e540b]"></div>
           <div className="ml-3 text-lg">Loading vegetables...</div>
         </div>
       </div>
