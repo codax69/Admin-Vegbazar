@@ -90,7 +90,7 @@ const Login = () => {
       // Store authentication data
       if (response.data.accessToken) {
         localStorage.setItem("token", response.data.accessToken);
-        localStorage.setItem("user", JSON.stringify(response.user));
+        localStorage.setItem("user", JSON.stringify(response.data.user));
         localStorage.setItem("userRole", response.data.user?.role || "user");
       }
 
