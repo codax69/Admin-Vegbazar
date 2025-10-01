@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useLoading } from "../context/loadingContext";
+import { useLoading } from "../context/LoadingContext";
 
 export default function AdminRegisterPage() {
   const { startLoading, stopLoading } = useLoading();

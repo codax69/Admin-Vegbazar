@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useLoading } from "../context/loadingContext";
+import { useLoading } from "../context/LoadingContext";
 
 const AddCityForm = () => {
   const { startLoading, stopLoading } = useLoading();

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import VegetableUpdateModal from "./VegetableUpdateModal";
-import { useLoading } from "../context/loadingContext";
+import { useLoading } from "../context/LoadingContext";
 
 const VegetableTable = () => {
   const [vegetables, setVegetables] = useState([]);

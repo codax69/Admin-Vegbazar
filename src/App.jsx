@@ -9,7 +9,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import AdminRegisterPage from "./components/Register";
 import Login from "./components/login";
 import axios from "axios";
-import { useLoading } from "./context/loadingContext";
+import { useLoading } from "./context/LoadingContext";
 import { AuthContext } from "./context/AuthContext";
 
 function App() {

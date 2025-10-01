@@ -5,7 +5,7 @@ import OrderTable from "./OrderTable";
 import VegetableTable from "./VegetableTable";
 import AddCityForm from "./AddCityForm";
 import axios from "axios";
-import { useLoading } from "../context/loadingContext";
+import { useLoading } from "../context/LoadingContext";
 
 const Dashboard = () => {
   const { startLoading, stopLoading } = useLoading();

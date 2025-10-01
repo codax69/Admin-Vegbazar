@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { X, Plus, Check, Package, DollarSign } from "lucide-react";
-import { useLoading } from "../context/loadingContext";
+import { useLoading } from "../context/LoadingContext";
 
 const OfferPanel = () => {
   const { startLoading, stopLoading } = useLoading();

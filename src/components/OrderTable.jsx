@@ -1,7 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-
+import { useLoading } from "../context/LoadingContext";
 const OrderTable = () => {
+  const { startLoading, stopLoading } = useLoading();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [viewMode, setViewMode] = useState("table");
   const [orders, setOrders] = useState([]);
@@ -9,6 +10,7 @@ const OrderTable = () => {
 
   const OrdersApiCall = async () => {
     setLoading(true);
+    startLoading()
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_API_SERVER_URL}/api/orders`
@@ -39,6 +41,7 @@ const OrderTable = () => {
       console.log(error.message);
     } finally {
       setLoading(false);
+      stopLoading()
     }
   };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useLoading } from "../context/loadingContext";
+import { useLoading } from "../context/LoadingContext";
 const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
   const {startLoading, stopLoading} = useLoading();
   const [formData, setFormData] = useState({
