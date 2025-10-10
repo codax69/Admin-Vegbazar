@@ -10,7 +10,7 @@ const OrderTable = () => {
 
   const OrdersApiCall = async () => {
     setLoading(true);
-    startLoading()
+    startLoading();
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_API_SERVER_URL}/api/orders`
@@ -28,10 +28,11 @@ const OrderTable = () => {
         address: o.customerInfo?.address,
         state: o.customerInfo?.state,
         city: o.customerInfo?.city || "",
+        area:o.customerInfo?.area,
         package: o.selectedOffer?.title,
         amount: o.totalAmount,
         status: o.status || "Pending",
-        paymentStatus: o.paymentStatus || "Pending", // Add payment status
+        paymentStatus: o.paymentStatus || "Pending", 
         paymentMethod: o.paymentMethod || "N/A",
         items: o.selectedVegetables || [],
       }));
@@ -41,7 +42,7 @@ const OrderTable = () => {
       console.log(error.message);
     } finally {
       setLoading(false);
-      stopLoading()
+      stopLoading();
     }
   };
 
@@ -113,7 +114,7 @@ const OrderTable = () => {
           <h4 className="font-semibold text-gray-700 mb-1">Location</h4>
           <p className="text-sm text-gray-600">{order.address}</p>
           <p className="text-xs text-gray-500">
-            {order.city}, {order.state}
+            {order.area},{order.city},
           </p>
         </div>
       </div>
@@ -390,7 +391,7 @@ const OrderTable = () => {
                       {order.phone}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
-                      {order.address}, {order.city}, {order.state}
+                      {order.address},{order.area}, {order.city} 
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-700 whitespace-nowrap">
                       {order.package}
@@ -557,7 +558,11 @@ const OrderTable = () => {
                   </p>
                   <p>
                     <span className="font-medium">City:</span>{" "}
-                    {selectedOrder.city}, {selectedOrder.state}
+                    {selectedOrder.city}
+                  </p>
+                  <p>
+                    <span className="font-medium">area:</span>{" "}
+                    {selectedOrder.area}
                   </p>
                   <p className="col-span-2">
                     <span className="font-medium">Address:</span>{" "}

@@ -28,13 +28,11 @@ const Dashboard = () => {
   const fetchData = async () => {
     startLoading();
     try {
-      const [userRes, vegRes, offerRes, orderRes] = await Promise.all([
+      const [ vegRes, offerRes, orderRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/vegetables`),
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/offers`),
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/orders`),
       ]);
-
-      setUsers(userRes.data.data?.users || []);
       setVegetables(vegRes.data.data);
       setOffers(offerRes.data.data || []);
       setOrders(orderRes.data.data || []);
