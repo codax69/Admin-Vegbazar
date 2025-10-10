@@ -1,6 +1,6 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { useLoading } from "../context/LoadingContext";
 
@@ -15,7 +15,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { setIsLoggedIn } = useContext(AuthContext);
+  const { setIsLoggedIn } = useAuth();
   const handleRegister = () => {
     navigate("/register");
   };
@@ -34,7 +34,7 @@ const Login = () => {
       }));
     }
   };
- 
+
   const validateForm = () => {
     const newErrors = {};
 

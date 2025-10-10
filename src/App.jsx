@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import AddVegetableForm from "./components/AddVegetableForm";
@@ -10,22 +10,16 @@ import AdminRegisterPage from "./components/Register";
 import Login from "./components/login";
 import axios from "axios";
 import { useLoading } from "./context/LoadingContext";
-import { AuthContext } from "./context/AuthContext";
+import { useAuth } from "./context/AuthContext";
 
 function App() {
   const Navigate = useNavigate();
-  const { setIsLoggedIn } = useContext(AuthContext); // ✅ fix
+  const { setIsLoggedIn, token } = useAuth(); 
   const { startLoading, stopLoading } = useLoading();
 
   const getUser = async () => {
     startLoading();
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.log("⚠️ No token found, please login first");
-        return;
-      }
-
       const response = await axios.get(
         `${import.meta.env.VITE_API_SERVER_URL}/api/auth/get-user`,
         {

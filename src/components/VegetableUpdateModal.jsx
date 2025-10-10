@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLoading } from "../context/LoadingContext";
+import { useAuth } from "../context/AuthContext";
 const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
-  const {startLoading, stopLoading} = useLoading();
+  const { token } = useAuth();
+  const { startLoading, stopLoading } = useLoading();
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -34,9 +36,9 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     // Update image preview when image URL changes
@@ -47,23 +49,25 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
 
   const validateForm = () => {
     const errors = [];
-    
+
     if (!formData.name.trim()) errors.push("Name is required");
-    if (!formData.price || parseFloat(formData.price) < 0) errors.push("Valid price is required");
-    if (!formData.stockKg || parseFloat(formData.stockKg) < 0) errors.push("Valid stock is required");
-    
+    if (!formData.price || parseFloat(formData.price) < 0)
+      errors.push("Valid price is required");
+    if (!formData.stockKg || parseFloat(formData.stockKg) < 0)
+      errors.push("Valid stock is required");
+
     return errors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const validationErrors = validateForm();
     if (validationErrors.length > 0) {
       setError(validationErrors.join(", "));
       return;
     }
-    startLoading()
+    startLoading();
     setLoading(true);
     setError(null);
 
@@ -79,8 +83,15 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
       };
 
       const response = await axios.patch(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${vegetable._id}`,
-        updateData
+        `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${
+          vegetable._id
+        }`,
+        updateData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       onUpdate(response.data.data);
@@ -88,9 +99,9 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
     } catch (error) {
       console.error("Update failed:", error);
       setError(
-        error.response?.data?.message || 
-        error.message || 
-        "Failed to update vegetable"
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to update vegetable"
       );
     } finally {
       setLoading(false);

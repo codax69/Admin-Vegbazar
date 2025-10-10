@@ -2,19 +2,21 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import VegetableUpdateModal from "./VegetableUpdateModal";
 import { useLoading } from "../context/LoadingContext";
+import { useAuth } from "../context/AuthContext";
 
 const VegetableTable = () => {
+  const { token } = useAuth();
   const [vegetables, setVegetables] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const {startLoading,stopLoading}=useLoading()
+  const { startLoading, stopLoading } = useLoading();
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedVegetable, setSelectedVegetable] = useState(null);
 
   const VegetableApiCall = async () => {
     try {
-      startLoading()
+      startLoading();
       setLoading(true);
       setError(null);
       const response = await axios.get(
@@ -26,7 +28,7 @@ const VegetableTable = () => {
       setError("Failed to fetch vegetables");
     } finally {
       setLoading(false);
-      stopLoading()
+      stopLoading();
     }
   };
 
@@ -34,10 +36,15 @@ const VegetableTable = () => {
     if (!window.confirm("Are you sure you want to delete this vegetable?")) {
       return;
     }
-    startLoading()
+    startLoading();
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${id}`
+        `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       await VegetableApiCall();
     } catch (error) {
@@ -46,7 +53,7 @@ const VegetableTable = () => {
         `Delete failed: ${error.response?.data?.message || error.message}`
       );
     } finally {
-      stopLoading()
+      stopLoading();
     }
   };
 
@@ -63,8 +70,8 @@ const VegetableTable = () => {
 
   const handleVegetableUpdate = (updatedVegetable) => {
     // Update the vegetable in the local state
-    setVegetables(prevVegetables =>
-      prevVegetables.map(veg =>
+    setVegetables((prevVegetables) =>
+      prevVegetables.map((veg) =>
         veg._id === updatedVegetable._id ? updatedVegetable : veg
       )
     );
@@ -76,11 +83,16 @@ const VegetableTable = () => {
       setError("Stock cannot be negative");
       return;
     }
-    startLoading()
+    startLoading();
     try {
       await axios.patch(
         `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${id}`,
-        { stockKg: parseFloat(newStock) }
+        { stockKg: parseFloat(newStock) },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       await VegetableApiCall();
     } catch (error) {
@@ -88,8 +100,8 @@ const VegetableTable = () => {
       setError(
         `Stock update failed: ${error.response?.data?.message || error.message}`
       );
-    }finally{
-      stopLoading()
+    } finally {
+      stopLoading();
     }
   };
 
@@ -254,19 +266,25 @@ const VegetableTable = () => {
         {/* Summary Stats */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-green-50 p-4 rounded-lg">
-            <div className="text-sm text-green-600 font-medium">Total Vegetables</div>
-            <div className="text-2xl font-bold text-green-800">{vegetables.length}</div>
+            <div className="text-sm text-green-600 font-medium">
+              Total Vegetables
+            </div>
+            <div className="text-2xl font-bold text-green-800">
+              {vegetables.length}
+            </div>
           </div>
           <div className="bg-yellow-50 p-4 rounded-lg">
-            <div className="text-sm text-yellow-600 font-medium">Low Stock Items</div>
+            <div className="text-sm text-yellow-600 font-medium">
+              Low Stock Items
+            </div>
             <div className="text-2xl font-bold text-yellow-800">
-              {vegetables.filter(v => v.stockKg <= 2).length}
+              {vegetables.filter((v) => v.stockKg <= 2).length}
             </div>
           </div>
           <div className="bg-red-50 p-4 rounded-lg">
             <div className="text-sm text-red-600 font-medium">Out of Stock</div>
             <div className="text-2xl font-bold text-red-800">
-              {vegetables.filter(v => v.stockKg === 0).length}
+              {vegetables.filter((v) => v.stockKg === 0).length}
             </div>
           </div>
         </div>

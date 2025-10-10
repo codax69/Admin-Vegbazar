@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { X, Plus, Check, Package, DollarSign } from "lucide-react";
 import { useLoading } from "../context/LoadingContext";
+import { useAuth } from "../context/AuthContext";
 
 const OfferPanel = () => {
+  const { token } = useAuth();
   const { startLoading, stopLoading } = useLoading();
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [newPrice, setNewPrice] = useState("");
@@ -103,6 +105,11 @@ const OfferPanel = () => {
         {
           ...selectedOffer,
           price: Number(newPrice),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -242,7 +249,12 @@ const OfferPanel = () => {
     startLoading();
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/offers/${id}`
+        `${import.meta.env.VITE_API_SERVER_URL}/api/offers/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       alert("Offer deleted successfully ✅");
       offersApiCall(); // Refresh list after delete

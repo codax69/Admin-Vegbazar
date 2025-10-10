@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLoading } from "../context/LoadingContext";
-
+import { useAuth } from "../context/AuthContext";
 const AddCityForm = () => {
+  const { token } = useAuth();
   const { startLoading, stopLoading } = useLoading();
   const [city, setCity] = useState("");
   const [areas, setAreas] = useState([""]);
@@ -77,7 +78,12 @@ const AddCityForm = () => {
       try {
         startLoading();
         await axios.delete(
-          `${import.meta.env.VITE_API_SERVER_URL}/api/cities/${cityId}`
+          `${import.meta.env.VITE_API_SERVER_URL}/api/cities/${cityId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         alert("✅ City deleted successfully!");
         fetchCities();
@@ -119,7 +125,15 @@ const AddCityForm = () => {
     };
 
     try {
-      await axios.patch(`/api/cities/${editingCity}`, updateData);
+      await axios.patch(
+        `/api/cities/${editingCity}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+        updateData
+      );
       alert("✅ City updated successfully!");
       setEditingCity(null);
       setEditCity("");
