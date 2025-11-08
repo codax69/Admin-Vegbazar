@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLoading } from "../context/LoadingContext";
 import { useAuth } from "../context/AuthContext";
+
 const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
   const { token } = useAuth();
   const { startLoading, stopLoading } = useLoading();
   const [formData, setFormData] = useState({
     name: "",
-    price: "",
+    vegBazarPrice1kg: "",
+    marketPrice1kg: "",
     stockKg: "",
     description: "",
     image: "",
@@ -18,12 +20,33 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
   const [error, setError] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
 
+  // Helper function to calculate prices from 1kg price (for preview only)
+  const calculatePrices = (price1kg) => {
+    if (!price1kg || isNaN(price1kg)) return null;
+    const p = parseFloat(price1kg);
+    return {
+      weight1kg: Math.round(p * 100) / 100,
+      weight500g: Math.round((p / 2) * 100) / 100,
+      weight250g: Math.round((p / 4) * 100) / 100,
+      weight100g: Math.round((p / 10) * 100) / 100,
+    };
+  };
+
+  // Calculate savings
+  const calculateSavings = (vegBazar, market) => {
+    if (!vegBazar || !market) return { amount: 0, percentage: 0 };
+    const amount = (market - vegBazar).toFixed(2);
+    const percentage = ((amount / market) * 100).toFixed(1);
+    return { amount, percentage };
+  };
+
   // Populate form when vegetable changes
   useEffect(() => {
     if (vegetable) {
       setFormData({
         name: vegetable.name || "",
-        price: vegetable.price || "",
+        vegBazarPrice1kg: vegetable.prices?.weight1kg || "",
+        marketPrice1kg: vegetable.marketPrices?.weight1kg || "",
         stockKg: vegetable.stockKg || "",
         description: vegetable.description || "",
         image: vegetable.image || "",
@@ -41,7 +64,6 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
       [name]: value,
     }));
 
-    // Update image preview when image URL changes
     if (name === "image") {
       setImagePreview(value);
     }
@@ -51,9 +73,11 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
     const errors = [];
 
     if (!formData.name.trim()) errors.push("Name is required");
-    if (!formData.price || parseFloat(formData.price) < 0)
-      errors.push("Valid price is required");
-    if (!formData.stockKg || parseFloat(formData.stockKg) < 0)
+    if (!formData.vegBazarPrice1kg || parseFloat(formData.vegBazarPrice1kg) <= 0)
+      errors.push("Valid VegBazar price is required");
+    if (!formData.marketPrice1kg || parseFloat(formData.marketPrice1kg) <= 0)
+      errors.push("Valid Market price is required");
+    if (!formData.stockKg || parseFloat(formData.stockKg) <= 0)
       errors.push("Valid stock is required");
 
     return errors;
@@ -72,9 +96,11 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
     setError(null);
 
     try {
+      // Send only the 1kg prices - backend will calculate all variants
       const updateData = {
         name: formData.name.trim(),
-        price: parseFloat(formData.price),
+        price1kg: parseFloat(formData.vegBazarPrice1kg),
+        marketPrice1kg: parseFloat(formData.marketPrice1kg),
         stockKg: parseFloat(formData.stockKg),
         description: formData.description.trim(),
         image: formData.image.trim(),
@@ -82,10 +108,10 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
         screenNumber: formData.screenNumber,
       };
 
+      console.log("Sending update data:", updateData);
+
       const response = await axios.patch(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${
-          vegetable._id
-        }`,
+        `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${vegetable._id}`,
         updateData,
         {
           headers: {
@@ -114,11 +140,19 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
     onClose();
   };
 
+  // Calculate prices for preview
+  const vegBazarPrices = calculatePrices(formData.vegBazarPrice1kg);
+  const marketPrices_display = calculatePrices(formData.marketPrice1kg);
+  const savings = calculateSavings(
+    formData.vegBazarPrice1kg,
+    formData.marketPrice1kg
+  );
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-2xl font-bold text-gray-900">
@@ -140,7 +174,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Left Column */}
             <div className="space-y-4">
               {/* Name */}
@@ -158,21 +192,44 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
                 />
               </div>
 
-              {/* Price */}
+              {/* VegBazar Price (1kg) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Price (₹) *
+                  VegBazar Price (1kg) ₹ *
                 </label>
                 <input
                   type="number"
-                  name="price"
-                  value={formData.price}
+                  name="vegBazarPrice1kg"
+                  value={formData.vegBazarPrice1kg}
                   onChange={handleInputChange}
                   min="0"
                   step="0.01"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-blue-300 bg-blue-50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  All other weights will be calculated automatically
+                </p>
+              </div>
+
+              {/* Market Price (1kg) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Market Price (1kg) ₹ *
+                </label>
+                <input
+                  type="number"
+                  name="marketPrice1kg"
+                  value={formData.marketPrice1kg}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-3 py-2 border border-green-300 bg-green-50 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  All other weights will be calculated automatically
+                </p>
               </div>
 
               {/* Stock */}
@@ -217,7 +274,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
                   name="screenNumber"
                   value={formData.screenNumber}
                   onChange={handleInputChange}
-                  placeholder="e.g., A1, B2, C3"
+                  placeholder="e.g., 1-5"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -268,7 +325,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  rows="4"
+                  rows="5"
                   placeholder="Brief description of the vegetable..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical"
                 />
@@ -276,8 +333,104 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
             </div>
           </div>
 
+          {/* Savings Summary */}
+          {formData.vegBazarPrice1kg && formData.marketPrice1kg && (
+            <div className="mb-6 p-4 bg-yellow-50 rounded-lg border-2 border-yellow-300">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">Savings Amount</p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    ₹{savings.amount}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">Savings Percentage</p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {savings.percentage}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 mb-1">Price Ratio</p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {(formData.marketPrice1kg / formData.vegBazarPrice1kg).toFixed(2)}x
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VegBazar Prices Preview */}
+          {vegBazarPrices && (
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="text-sm font-semibold text-blue-900 mb-3">
+                📊 VegBazar Prices Preview (Auto-calculated)
+              </h3>
+              <div className="grid grid-cols-4 gap-2 text-center">
+                <div>
+                  <p className="text-xs text-gray-600">1 kg</p>
+                  <p className="text-lg font-bold text-blue-600">
+                    ₹{vegBazarPrices.weight1kg}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600">500g</p>
+                  <p className="text-lg font-bold text-blue-600">
+                    ₹{vegBazarPrices.weight500g}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600">250g</p>
+                  <p className="text-lg font-bold text-blue-600">
+                    ₹{vegBazarPrices.weight250g}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600">100g</p>
+                  <p className="text-lg font-bold text-blue-600">
+                    ₹{vegBazarPrices.weight100g}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Market Prices Preview */}
+          {marketPrices_display && (
+            <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+              <h3 className="text-sm font-semibold text-green-900 mb-3">
+                🏪 Market Prices Preview (Auto-calculated)
+              </h3>
+              <div className="grid grid-cols-4 gap-2 text-center">
+                <div>
+                  <p className="text-xs text-gray-600">1 kg</p>
+                  <p className="text-lg font-bold text-green-600">
+                    ₹{marketPrices_display.weight1kg}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600">500g</p>
+                  <p className="text-lg font-bold text-green-600">
+                    ₹{marketPrices_display.weight500g}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600">250g</p>
+                  <p className="text-lg font-bold text-green-600">
+                    ₹{marketPrices_display.weight250g}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600">100g</p>
+                  <p className="text-lg font-bold text-green-600">
+                    ₹{marketPrices_display.weight100g}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Footer Buttons */}
-          <div className="flex justify-end space-x-4 mt-8 pt-4 border-t">
+          <div className="flex justify-end space-x-4 pt-4 border-t">
             <button
               type="button"
               onClick={handleClose}

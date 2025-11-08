@@ -1,21 +1,44 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { useLoading } from "../context/LoadingContext";
+import { useAuth } from "../context/AuthContext";
 
 const AddVegetableForm = () => {
+  const {token} = useAuth()
   const { startLoading, stopLoading } = useLoading();
   const [formData, setFormData] = useState({
     vegetableName: "",
     stock: "",
     image: "",
-    screen: "1",
     offer: "",
-    price: "",
+    vegBazarPrice1kg: "",
+    marketPrice1kg: "",
     description: "",
+    screen: "1",
   });
 
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Helper function to calculate prices from 1kg price
+  const calculatePrices = (price1kg) => {
+    if (!price1kg || isNaN(price1kg)) return null;
+    const p = parseFloat(price1kg);
+    return {
+      weight1kg: p,
+      weight500g: Math.round((p / 2) * 100) / 100,
+      weight250g: Math.round((p / 4) * 100) / 100,
+      weight100g: Math.round((p / 10) * 100) / 100,
+    };
+  };
+
+  // Calculate savings
+  const calculateSavings = (vegBazar, market) => {
+    if (!vegBazar || !market) return { amount: 0, percentage: 0 };
+    const amount = (market - vegBazar).toFixed(2);
+    const percentage = ((amount / market) * 100).toFixed(1);
+    return { amount, percentage };
+  };
 
   // Form validation
   const validateForm = () => {
@@ -29,14 +52,20 @@ const AddVegetableForm = () => {
       newErrors.stock = "Stock must be greater than 0";
     }
 
-    if (!formData.price || parseFloat(formData.price) <= 0) {
-      newErrors.price = "Price must be greater than 0";
+    if (
+      !formData.vegBazarPrice1kg ||
+      parseFloat(formData.vegBazarPrice1kg) <= 0
+    ) {
+      newErrors.vegBazarPrice1kg = "VegBazar price must be greater than 0";
+    }
+
+    if (!formData.marketPrice1kg || parseFloat(formData.marketPrice1kg) <= 0) {
+      newErrors.marketPrice1kg = "Market price must be greater than 0";
     }
 
     if (!formData.image.trim()) {
       newErrors.image = "Image URL is required";
     } else {
-      // Basic URL validation
       try {
         new URL(formData.image);
       } catch {
@@ -56,8 +85,27 @@ const AddVegetableForm = () => {
     }
 
     setIsLoading(true);
-    startLoading()
+    startLoading();
+
     try {
+      const vegBazarPrice = parseFloat(formData.vegBazarPrice1kg);
+      const marketPrice = parseFloat(formData.marketPrice1kg);
+
+      // Calculate all price variants
+      const prices = calculatePrices(vegBazarPrice);
+      const marketPrices = calculatePrices(marketPrice);
+
+      const payload = {
+        name: formData.vegetableName,
+        image: formData.image,
+        stockKg: parseFloat(formData.stock),
+        description: formData.description,
+        offer: formData.offer,
+        prices,
+        marketPrices,
+        screenNumber: parseInt(formData.screen),
+      };
+
       await addVegetable(payload);
       alert("Vegetable added successfully!");
       resetForm();
@@ -66,7 +114,7 @@ const AddVegetableForm = () => {
       alert("Failed to add vegetable. Please try again.");
     } finally {
       setIsLoading(false);
-      stopLoading()
+      stopLoading();
     }
   };
 
@@ -77,7 +125,8 @@ const AddVegetableForm = () => {
       image: "",
       screen: "1",
       offer: "",
-      price: "",
+      vegBazarPrice1kg: "",
+      marketPrice1kg: "",
       description: "",
     });
     setErrors({});
@@ -85,45 +134,42 @@ const AddVegetableForm = () => {
 
   const handleInputChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
-    // Clear error for this field when user starts typing
     if (errors[field]) {
       setErrors({ ...errors, [field]: "" });
     }
   };
-  const payload = {
-    name: formData.vegetableName,
-    image: formData.image,
-    stockKg: formData.stock,
-    description: formData.description,
-    offer: formData.offer,
-    price: formData.price,
-    screenNumber: formData.screen,
-  };
+
   const addVegetable = async (payload) => {
-    startLoading()
     try {
       await axios.post(
         `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/add`,
-        payload
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
     } catch (error) {
-      // Handle different types of errors
       if (error.response) {
-        // Server responded with error status
         throw new Error(
           error.response.data?.message || "Server error occurred"
         );
       } else if (error.request) {
-        // Request was made but no response received
         throw new Error("Network error - please check your connection");
       } else {
-        // Something else happened
         throw new Error("An unexpected error occurred");
       }
-    }finally{
-        stopLoading()
     }
   };
+
+  // Calculate prices for preview
+  const vegBazarPrices = calculatePrices(formData.vegBazarPrice1kg);
+  const marketPrices_display = calculatePrices(formData.marketPrice1kg);
+  const savings = calculateSavings(
+    formData.vegBazarPrice1kg,
+    formData.marketPrice1kg
+  );
 
   return (
     <div className="min-h-screen bg-gray-100 py-4 px-4 sm:py-6 flex flex-col justify-center">
@@ -134,7 +180,7 @@ const AddVegetableForm = () => {
         </h1>
       </div>
 
-      <div className="relative w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl mx-auto">
+      <div className="relative w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-3xl mx-auto">
         <div className="relative px-4 py-6 sm:px-6 sm:py-10 bg-white shadow-lg rounded-lg sm:rounded-3xl">
           <div className="w-full">
             {/* Desktop Header */}
@@ -176,62 +222,187 @@ const AddVegetableForm = () => {
                   )}
                 </div>
 
-                {/* Stock and Price Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Stock Amount */}
-                  <div className="flex flex-col">
-                    <label className="text-sm sm:text-base font-medium text-gray-700 mb-2">
-                      Stock (kg) *
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.stock}
-                      onChange={(e) =>
-                        handleInputChange("stock", e.target.value)
-                      }
-                      className={`w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-md focus:outline-none focus:ring-2 text-sm sm:text-base transition-colors ${
-                        errors.stock
-                          ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                          : "border-gray-300 focus:ring-green-500 focus:border-green-500"
-                      }`}
-                      placeholder="Enter stock"
-                      disabled={isLoading}
-                    />
-                    {errors.stock && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.stock}
-                      </p>
-                    )}
-                  </div>
+                {/* Stock Amount */}
+                <div className="flex flex-col">
+                  <label className="text-sm sm:text-base font-medium text-gray-700 mb-2">
+                    Stock (kg) *
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.stock}
+                    onChange={(e) => handleInputChange("stock", e.target.value)}
+                    className={`w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-md focus:outline-none focus:ring-2 text-sm sm:text-base transition-colors ${
+                      errors.stock
+                        ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-green-500 focus:border-green-500"
+                    }`}
+                    placeholder="Enter stock"
+                    disabled={isLoading}
+                  />
+                  {errors.stock && (
+                    <p className="mt-1 text-sm text-red-600">{errors.stock}</p>
+                  )}
+                </div>
 
-                  {/* Price */}
+                {/* Price Inputs Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* VegBazar Price (1kg) */}
                   <div className="flex flex-col">
                     <label className="text-sm sm:text-base font-medium text-gray-700 mb-2">
-                      Price per kg (₹) *
+                      VegBazar Price (1kg) ₹ *
                     </label>
                     <input
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.price}
+                      value={formData.vegBazarPrice1kg}
                       onChange={(e) =>
-                        handleInputChange("price", e.target.value)
+                        handleInputChange("vegBazarPrice1kg", e.target.value)
                       }
-                      className={`w-full px-3 py-2 sm:px-4 sm:py-3 border rounded-md focus:outline-none focus:ring-2 text-sm sm:text-base transition-colors ${
-                        errors.price
-                          ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                          : "border-gray-300 focus:ring-green-500 focus:border-green-500"
+                      className={`w-full px-3 py-2 sm:px-4 sm:py-3 border border-blue-300 bg-blue-50 rounded-md focus:outline-none focus:ring-2 text-sm sm:text-base transition-colors ${
+                        errors.vegBazarPrice1kg
+                          ? "focus:ring-red-500 focus:border-red-500"
+                          : "focus:ring-blue-500 focus:border-blue-500"
                       }`}
-                      placeholder="Enter price"
+                      placeholder="Enter VegBazar price"
                       disabled={isLoading}
                     />
-                    {errors.price && (
+                    {errors.vegBazarPrice1kg && (
                       <p className="mt-1 text-sm text-red-600">
-                        {errors.price}
+                        {errors.vegBazarPrice1kg}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Market Price (1kg) */}
+                  <div className="flex flex-col">
+                    <label className="text-sm sm:text-base font-medium text-gray-700 mb-2">
+                      Market Price (1kg) ₹ *
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.marketPrice1kg}
+                      onChange={(e) =>
+                        handleInputChange("marketPrice1kg", e.target.value)
+                      }
+                      className={`w-full px-3 py-2 sm:px-4 sm:py-3 border border-green-300 bg-green-50 rounded-md focus:outline-none focus:ring-2 text-sm sm:text-base transition-colors ${
+                        errors.marketPrice1kg
+                          ? "focus:ring-red-500 focus:border-red-500"
+                          : "focus:ring-green-500 focus:border-green-500"
+                      }`}
+                      placeholder="Enter Market price"
+                      disabled={isLoading}
+                    />
+                    {errors.marketPrice1kg && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.marketPrice1kg}
                       </p>
                     )}
                   </div>
                 </div>
+
+                {/* Savings Summary */}
+                {formData.vegBazarPrice1kg && formData.marketPrice1kg && (
+                  <div className="p-4 bg-yellow-50 rounded-lg border-2 border-yellow-300">
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">
+                          Savings Amount
+                        </p>
+                        <p className="text-2xl font-bold text-yellow-600">
+                          ₹{savings.amount}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">Savings %</p>
+                        <p className="text-2xl font-bold text-yellow-600">
+                          {savings.percentage}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">Multiplier</p>
+                        <p className="text-2xl font-bold text-yellow-600">
+                          {(
+                            formData.marketPrice1kg / formData.vegBazarPrice1kg
+                          ).toFixed(2)}
+                          x
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* VegBazar Prices Display */}
+                {vegBazarPrices && (
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h3 className="text-sm font-semibold text-blue-900 mb-3">
+                      VegBazar Prices (Auto-calculated)
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                      <div>
+                        <p className="text-xs text-gray-600">1 kg</p>
+                        <p className="text-lg font-bold text-blue-600">
+                          ₹{vegBazarPrices.weight1kg}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">500g</p>
+                        <p className="text-lg font-bold text-blue-600">
+                          ₹{vegBazarPrices.weight500g}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">250g</p>
+                        <p className="text-lg font-bold text-blue-600">
+                          ₹{vegBazarPrices.weight250g}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">100g</p>
+                        <p className="text-lg font-bold text-blue-600">
+                          ₹{vegBazarPrices.weight100g}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Market Prices Display */}
+                {marketPrices_display && (
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <h3 className="text-sm font-semibold text-green-900 mb-3">
+                      Market Prices (Auto-calculated)
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                      <div>
+                        <p className="text-xs text-gray-600">1 kg</p>
+                        <p className="text-lg font-bold text-green-600">
+                          ₹{marketPrices_display.weight1kg}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">500g</p>
+                        <p className="text-lg font-bold text-green-600">
+                          ₹{marketPrices_display.weight500g}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">250g</p>
+                        <p className="text-lg font-bold text-green-600">
+                          ₹{marketPrices_display.weight250g}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">100g</p>
+                        <p className="text-lg font-bold text-green-600">
+                          ₹{marketPrices_display.weight100g}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Image URL */}
                 <div className="flex flex-col">
@@ -362,7 +533,7 @@ const AddVegetableForm = () => {
                         Adding...
                       </>
                     ) : (
-                      <>➕ Add Vegetable</>
+                      <>+ Add Vegetable</>
                     )}
                   </button>
                 </div>
@@ -395,17 +566,22 @@ const AddVegetableForm = () => {
                       </h4>
                       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0">
                         <p className="text-sm sm:text-base text-gray-600">
-                          📦 Stock: {formData.stock || "0"} kg
+                          Stock: {formData.stock || "0"} kg
                         </p>
-                        {formData.price && (
+                        {formData.vegBazarPrice1kg && (
+                          <p className="text-sm sm:text-base text-blue-600 font-bold">
+                            VegBazar: ₹{formData.vegBazarPrice1kg}
+                          </p>
+                        )}
+                        {formData.marketPrice1kg && (
                           <p className="text-sm sm:text-base text-green-600 font-bold">
-                            💰 ₹{formData.price}/kg
+                            Market: ₹{formData.marketPrice1kg}
                           </p>
                         )}
                       </div>
                       {formData.offer && (
                         <p className="text-sm sm:text-base text-blue-600 font-medium mt-1">
-                          🏷️ {formData.offer}
+                          {formData.offer}
                         </p>
                       )}
                       {formData.description && (

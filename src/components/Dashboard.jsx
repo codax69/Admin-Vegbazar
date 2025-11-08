@@ -6,6 +6,7 @@ import VegetableTable from "./VegetableTable";
 import AddCityForm from "./AddCityForm";
 import axios from "axios";
 import { useLoading } from "../context/LoadingContext";
+import AdminTestimonials from "./AdminTestimonials";
 
 const Dashboard = () => {
   const { startLoading, stopLoading } = useLoading();
@@ -24,25 +25,25 @@ const Dashboard = () => {
     { id: "offers", name: "Offers", icon: "🏷️" },
     { id: "AddCity", name: "Add City", icon: "🌆" },
     { id: "add-vegetable", name: "Add Vegetable", icon: "➕" },
+    { id: "testimonials", name: "Testimonials", icon: "💬" },
   ];
   const fetchData = async () => {
     startLoading();
     try {
-      const [ vegRes, offerRes, orderRes] = await Promise.all([
+      const [vegRes, offerRes, orderRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/vegetables`),
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/offers`),
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/orders`),
       ]);
       setVegetables(vegRes.data.data);
       setOffers(offerRes.data.data || []);
-      setOrders(orderRes.data.data || []);
+      setOrders(orderRes.data.data.orders || []);
     } catch (error) {
       console.log("Error fetching dashboard stats:", error.message);
     } finally {
       stopLoading();
     }
   };
-
   useEffect(() => {
     fetchData();
   }, []);
@@ -166,6 +167,8 @@ const Dashboard = () => {
         return <AddCityForm />;
       case "add-vegetable":
         return <AddVegetableForm />;
+      case "testimonials":
+        return <AdminTestimonials />;
       default:
         return (
           <div>

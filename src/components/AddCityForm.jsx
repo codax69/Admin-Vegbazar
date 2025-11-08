@@ -21,7 +21,12 @@ const AddCityForm = () => {
     setError("");
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/cities/`
+        `${import.meta.env.VITE_API_SERVER_URL}/api/cities/`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       setCities(response.data);
     } catch (err) {
@@ -59,15 +64,20 @@ const AddCityForm = () => {
       startLoading();
       await axios.post(
         `${import.meta.env.VITE_API_SERVER_URL}/api/cities/add`,
-        formData
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-      alert("✅ City added successfully!");
+      alert("City added successfully!");
       setCity("");
       setAreas([""]);
       fetchCities();
     } catch (err) {
       console.error(err);
-      alert("❌ Error adding city");
+      alert("Error adding city");
     } finally {
       stopLoading();
     }
@@ -85,11 +95,11 @@ const AddCityForm = () => {
             },
           }
         );
-        alert("✅ City deleted successfully!");
+        alert("City deleted successfully!");
         fetchCities();
       } catch (err) {
         console.error(err);
-        alert("❌ Error deleting city");
+        alert("Error deleting city");
       } finally {
         stopLoading();
       }
@@ -125,32 +135,35 @@ const AddCityForm = () => {
     };
 
     try {
+      startLoading();
       await axios.patch(
-        `/api/cities/${editingCity}`,
+        `${import.meta.env.VITE_API_SERVER_URL}/api/cities/${editingCity}`,
+        updateData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
-        updateData
+        }
       );
-      alert("✅ City updated successfully!");
+      alert("City updated successfully!");
       setEditingCity(null);
       setEditCity("");
       setEditAreas([]);
       fetchCities();
     } catch (err) {
       console.error(err);
-      alert("❌ Error updating city");
+      alert("Error updating city");
+    } finally {
+      stopLoading();
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
-      {/* ✅ Add City Form */}
+      {/* Add City Form */}
       <div className="bg-white p-6 rounded-2xl shadow-lg border border-green-200">
         <h2 className="text-2xl font-bold text-green-600 mb-4 text-center">
-          🌿 Add City & Areas
+          Add City & Areas
         </h2>
 
         <div className="space-y-4">
@@ -209,7 +222,7 @@ const AddCityForm = () => {
             onClick={handleSubmit}
             className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition duration-200 font-medium"
           >
-            ✅ Save City
+            Save City
           </button>
         </div>
       </div>
@@ -218,19 +231,19 @@ const AddCityForm = () => {
       <div className="bg-white p-6 rounded-2xl shadow-lg border border-green-200">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-green-600">
-            🏙️ Cities & Areas
+            Cities & Areas
           </h2>
           <button
             onClick={fetchCities}
             className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition duration-200 text-sm font-medium"
           >
-            🔄 Refresh
+            Refresh
           </button>
         </div>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-            ⚠️ {error}
+            {error}
           </div>
         )}
 
@@ -242,7 +255,7 @@ const AddCityForm = () => {
           </div>
         ) : cities.length === 0 ? (
           <div className="text-center py-8 text-green-500">
-            <div className="text-4xl mb-2">🏙️</div>
+            <div className="text-4xl mb-2">📍</div>
             <p>No cities added yet. Add your first city above!</p>
           </div>
         ) : (
@@ -257,7 +270,7 @@ const AddCityForm = () => {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-green-700">
-                        ✏️ Editing City
+                        Editing City
                       </h3>
                       <button
                         onClick={handleCancelEdit}
@@ -320,7 +333,7 @@ const AddCityForm = () => {
                         onClick={handleUpdateCity}
                         className="flex-1 bg-green-500 text-white py-1 px-3 rounded text-sm hover:bg-green-600 transition-colors"
                       >
-                        💾 Save
+                        Save
                       </button>
                       <button
                         onClick={handleCancelEdit}
@@ -335,7 +348,7 @@ const AddCityForm = () => {
                   <>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-lg font-semibold text-green-700 flex items-center gap-2">
-                        📍 {cityData.name || cityData.city}
+                        {cityData.name || cityData.city}
                       </h3>
                       <div className="flex gap-1">
                         <button
@@ -343,7 +356,7 @@ const AddCityForm = () => {
                           className="text-green-600 hover:text-green-700 text-sm p-1 hover:bg-green-50 rounded transition-colors"
                           title="Edit city"
                         >
-                          ✏️
+                          Edit
                         </button>
                         {cityData._id && (
                           <button
@@ -351,7 +364,7 @@ const AddCityForm = () => {
                             className="text-red-400 hover:text-red-600 text-sm p-1 hover:bg-red-50 rounded transition-colors"
                             title="Delete city"
                           >
-                            🗑️
+                            Delete
                           </button>
                         )}
                       </div>
@@ -359,7 +372,7 @@ const AddCityForm = () => {
 
                     <div className="space-y-2">
                       <div className="text-sm text-green-600 font-medium mb-2 flex items-center gap-1">
-                        🏘️ Areas ({cityData.areas?.length || 0}):
+                        Areas ({cityData.areas?.length || 0}):
                       </div>
                       {cityData.areas && cityData.areas.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
@@ -381,7 +394,6 @@ const AddCityForm = () => {
 
                     <div className="mt-3 pt-2 border-t border-green-100">
                       <div className="text-xs text-gray-500 flex items-center gap-1">
-                        📅{" "}
                         {cityData.createdAt
                           ? `Added: ${new Date(
                               cityData.createdAt
@@ -401,7 +413,7 @@ const AddCityForm = () => {
       {cities.length > 0 && (
         <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border border-green-200">
           <h3 className="text-lg font-semibold text-center text-gray-700 mb-4">
-            📊 Summary Statistics
+            Summary Statistics
           </h3>
           <div className="flex items-center justify-center gap-8 text-center">
             <div className="bg-white p-4 rounded-lg shadow-sm">

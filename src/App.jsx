@@ -11,6 +11,7 @@ import Login from "./components/login";
 import axios from "axios";
 import { useLoading } from "./context/LoadingContext";
 import { useAuth } from "./context/AuthContext";
+import AdminTestimonials from "./components/AdminTestimonials";
 
 function App() {
   const Navigate = useNavigate();
@@ -59,6 +60,7 @@ function App() {
           <Route path="/add-vegetable" element={<AddVegetableForm />} />
           <Route path="/stock" element={<StockPanel />} />
           <Route path="/offers" element={<OfferPanel />} />
+          <Route path="/testimonials" element={<AdminTestimonials />} />
         </Route>
       </Route>
     </Routes>

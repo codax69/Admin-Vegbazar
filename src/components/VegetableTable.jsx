@@ -3,6 +3,7 @@ import axios from "axios";
 import VegetableUpdateModal from "./VegetableUpdateModal";
 import { useLoading } from "../context/LoadingContext";
 import { useAuth } from "../context/AuthContext";
+import { ChevronDown } from "lucide-react";
 
 const VegetableTable = () => {
   const { token } = useAuth();
@@ -10,6 +11,7 @@ const VegetableTable = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { startLoading, stopLoading } = useLoading();
+  const [expandedRows, setExpandedRows] = useState({});
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedVegetable, setSelectedVegetable] = useState(null);
@@ -69,7 +71,6 @@ const VegetableTable = () => {
   };
 
   const handleVegetableUpdate = (updatedVegetable) => {
-    // Update the vegetable in the local state
     setVegetables((prevVegetables) =>
       prevVegetables.map((veg) =>
         veg._id === updatedVegetable._id ? updatedVegetable : veg
@@ -105,6 +106,13 @@ const VegetableTable = () => {
     }
   };
 
+  const toggleRowExpand = (id) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
   useEffect(() => {
     VegetableApiCall();
   }, []);
@@ -122,7 +130,7 @@ const VegetableTable = () => {
 
   return (
     <>
-      <div className="bg-white p-8 rounded-lg shadow-lg overflow-x-auto">
+      <div className="bg-white p-8 rounded-lg shadow-lg">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
             Vegetable Stock Levels
@@ -158,109 +166,224 @@ const VegetableTable = () => {
             </button>
           </div>
         ) : (
-          <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                  Image
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                  Stock (kg)
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                  Description
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                  Price
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                  Offer
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                  Screen
-                </th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {vegetables.map((veg) => (
-                <tr
-                  key={veg._id}
-                  className="hover:bg-gray-50 transition-colors duration-150"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <img
-                      src={veg.image}
-                      alt={veg.name}
-                      className="h-12 w-12 rounded-full object-cover border"
-                      onError={(e) => {
-                        e.target.src = "/placeholder-vegetable.png";
-                      }}
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {veg.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center space-x-2">
-                      <span
-                        className={`px-2 py-1 inline-flex text-xs font-semibold rounded-full
-                          ${
-                            veg.stockKg >= 10
-                              ? "bg-green-100 text-green-800"
-                              : veg.stockKg >= 2
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                      >
-                        {veg.stockKg} kg
-                      </span>
-                      {veg.stockKg <= 2 && (
-                        <span className="text-red-500 text-xs">Low Stock!</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">
-                    <div className="truncate" title={veg.description}>
-                      {veg.description || "-"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                    ₹{veg.price}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
-                    {veg.offer || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {veg.screenNumber || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <div className="flex justify-center space-x-2">
-                      <button
-                        onClick={() => handleEdit(veg)}
-                        className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition text-sm"
-                        title="Edit all details"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(veg._id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition text-sm"
-                        title="Delete vegetable"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    Image
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    Stock (kg)
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    VegBazar Price (1kg)
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    Offer
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    Screen
+                  </th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">
+                    Prices
+                  </th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {vegetables.map((veg) => (
+                  <React.Fragment key={veg._id}>
+                    <tr className="hover:bg-gray-50 transition-colors duration-150">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <img
+                          src={veg.image}
+                          alt={veg.name}
+                          className="h-12 w-12 rounded-full object-cover border"
+                          onError={(e) => {
+                            e.target.src = "/placeholder-vegetable.png";
+                          }}
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {veg.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-2">
+                          <span
+                            className={`px-2 py-1 inline-flex text-xs font-semibold rounded-full
+                              ${
+                                veg.stockKg >= 10
+                                  ? "bg-green-100 text-green-800"
+                                  : veg.stockKg >= 2
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                          >
+                            {veg.stockKg} kg
+                          </span>
+                          {veg.stockKg <= 2 && (
+                            <span className="text-red-500 text-xs">
+                              Low Stock!
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
+                        ₹{veg.prices?.weight1kg || veg.price}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                        {veg.offer || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {veg.screenNumber || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <button
+                          onClick={() => toggleRowExpand(veg._id)}
+                          className="inline-flex items-center text-blue-600 hover:text-blue-800 transition"
+                          title="View all price variants"
+                        >
+                          <ChevronDown
+                            size={18}
+                            className={`transform transition-transform ${
+                              expandedRows[veg._id] ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex justify-center space-x-2">
+                          <button
+                            onClick={() => handleEdit(veg)}
+                            className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition text-sm"
+                            title="Edit all details"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(veg._id)}
+                            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition text-sm"
+                            title="Delete vegetable"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* Expanded Price Details Row */}
+                    {expandedRows[veg._id] && (
+                      <tr className="bg-gray-50">
+                        <td colSpan="8" className="px-6 py-4">
+                          <div className="space-y-4">
+                            {/* VegBazar Prices */}
+                            <div>
+                              <h4 className="font-semibold text-gray-800 mb-2">
+                                VegBazar Prices
+                              </h4>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                                  <p className="text-xs text-gray-600">1 kg</p>
+                                  <p className="text-lg font-bold text-blue-600">
+                                    ₹{veg.prices?.weight1kg}
+                                  </p>
+                                </div>
+                                <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                                  <p className="text-xs text-gray-600">500g</p>
+                                  <p className="text-lg font-bold text-blue-600">
+                                    ₹{veg.prices?.weight500g}
+                                  </p>
+                                </div>
+                                <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                                  <p className="text-xs text-gray-600">250g</p>
+                                  <p className="text-lg font-bold text-blue-600">
+                                    ₹{veg.prices?.weight250g}
+                                  </p>
+                                </div>
+                                <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                                  <p className="text-xs text-gray-600">100g</p>
+                                  <p className="text-lg font-bold text-blue-600">
+                                    ₹{veg.prices?.weight100g}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Market Prices */}
+                            <div>
+                              <h4 className="font-semibold text-gray-800 mb-2">
+                                Market Prices (Reference)
+                              </h4>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="bg-green-50 p-3 rounded border border-green-200">
+                                  <p className="text-xs text-gray-600">1 kg</p>
+                                  <p className="text-lg font-bold text-green-600">
+                                    ₹{veg.marketPrices?.weight1kg}
+                                  </p>
+                                </div>
+                                <div className="bg-green-50 p-3 rounded border border-green-200">
+                                  <p className="text-xs text-gray-600">500g</p>
+                                  <p className="text-lg font-bold text-green-600">
+                                    ₹{veg.marketPrices?.weight500g}
+                                  </p>
+                                </div>
+                                <div className="bg-green-50 p-3 rounded border border-green-200">
+                                  <p className="text-xs text-gray-600">250g</p>
+                                  <p className="text-lg font-bold text-green-600">
+                                    ₹{veg.marketPrices?.weight250g}
+                                  </p>
+                                </div>
+                                <div className="bg-green-50 p-3 rounded border border-green-200">
+                                  <p className="text-xs text-gray-600">100g</p>
+                                  <p className="text-lg font-bold text-green-600">
+                                    ₹{veg.marketPrices?.weight100g}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Savings */}
+                            <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
+                              <p className="text-sm font-semibold text-yellow-800">
+                                Savings Comparison (1kg):₹
+                                {(
+                                  veg.marketPrices?.weight1kg -
+                                  veg.prices?.weight1kg
+                                ).toFixed(2)}{" "}
+                                (
+                                {(
+                                  ((veg.marketPrices?.weight1kg -
+                                    veg.prices?.weight1kg) /
+                                    veg.marketPrices?.weight1kg) *
+                                  100
+                                ).toFixed(1)}
+                                %)
+                              </p>
+                            </div>
+
+                            {/* Description */}
+                            {veg.description && (
+                              <div className="bg-gray-100 p-3 rounded">
+                                <p className="text-sm text-gray-700">
+                                  <strong>Description:</strong> {veg.description}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {/* Summary Stats */}
