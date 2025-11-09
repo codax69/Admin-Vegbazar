@@ -3,7 +3,7 @@ import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
-const API_URL = "http://localhost:4000/api/testimonials";
+const API_URL = `${import.meta.env.VITE_API_SERVER_URL}/api/testimonials`;
 const AdminTestimonials = () => {
   const { token } = useAuth();
   const [testimonials, setTestimonials] = useState([]);
