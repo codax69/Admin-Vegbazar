@@ -95,7 +95,7 @@ export default function AdminRegisterPage() {
     setSubmitMessage({ type: "", text: "" });
     startLoading();
     try {
-      const response = await axios.post(
+      const response = axios.post(
         `${import.meta.env.VITE_API_SERVER_URL}/api/auth/register`,
         {
           username: formData.username,
@@ -103,9 +103,7 @@ export default function AdminRegisterPage() {
           password: formData.password,
           role: formData.role,
         },
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
 
       // ✅ success check fixed
