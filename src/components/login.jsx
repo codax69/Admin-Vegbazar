@@ -82,8 +82,7 @@ const Login = () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_SERVER_URL}/api/auth/login`,
-        formData,
-        { withCredentials: true }
+        formData,{withCredentials: true}
       );
       setIsLoggedIn(true);
       startLoading();
