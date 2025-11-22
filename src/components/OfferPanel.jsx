@@ -26,7 +26,7 @@ const OfferPanel = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-
+  console.log(token);
   // Category mapping based on screenNumber
   const categories = {
     all: "All Categories",
@@ -36,7 +36,7 @@ const OfferPanel = () => {
     4: "Exotic Vegetables",
     5: "Organic Vegetables",
   };
-
+  console.log(token);
   // Fetch offers from API
   const offersApiCall = async () => {
     startLoading();
@@ -86,11 +86,14 @@ const OfferPanel = () => {
     if (offer) {
       // Fetch vegetables first
       await fetchVegetables();
-      
+
       // Prepare selected vegetables - handle both populated and unpopulated data
       let selectedVegs = [];
       if (Array.isArray(offer.vegetables) && offer.vegetables.length > 0) {
-        if (typeof offer.vegetables[0] === 'object' && offer.vegetables[0]._id) {
+        if (
+          typeof offer.vegetables[0] === "object" &&
+          offer.vegetables[0]._id
+        ) {
           // Already populated
           selectedVegs = offer.vegetables;
         } else {
@@ -100,8 +103,10 @@ const OfferPanel = () => {
               `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables`
             );
             const allVegetables = vegResponse.data.data;
-            selectedVegs = allVegetables.filter(v => 
-              offer.vegetables.includes(v._id) || offer.vegetables.includes(v.name)
+            selectedVegs = allVegetables.filter(
+              (v) =>
+                offer.vegetables.includes(v._id) ||
+                offer.vegetables.includes(v.name)
             );
           } catch (error) {
             console.error("Error fetching vegetable details:", error);
@@ -143,7 +148,9 @@ const OfferPanel = () => {
       };
 
       await axios.patch(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/offers/${selectedOffer._id}`,
+        `${import.meta.env.VITE_API_SERVER_URL}/api/offers/${
+          selectedOffer._id
+        }`,
         offerData,
         {
           headers: {
@@ -151,7 +158,7 @@ const OfferPanel = () => {
           },
         }
       );
-     
+
       alert("Offer updated successfully!");
       setShowEditForm(false);
       setSelectedOffer(null);
@@ -339,7 +346,9 @@ const OfferPanel = () => {
     const setCurrentOffer = isEdit ? setSelectedOffer : setNewOffer;
     const handleSubmit = isEdit ? handleUpdateOffer : handleAddOffer;
     const handleClose = isEdit ? resetEditForm : resetForm;
-    const handleVegSelect = isEdit ? handleEditVegetableSelect : handleVegetableSelect;
+    const handleVegSelect = isEdit
+      ? handleEditVegetableSelect
+      : handleVegetableSelect;
 
     return (
       <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
@@ -388,7 +397,10 @@ const OfferPanel = () => {
                       step="0.01"
                       value={currentOffer.price}
                       onChange={(e) =>
-                        setCurrentOffer({ ...currentOffer, price: e.target.value })
+                        setCurrentOffer({
+                          ...currentOffer,
+                          price: e.target.value,
+                        })
                       }
                       className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder="₹0.00"
@@ -406,7 +418,10 @@ const OfferPanel = () => {
                     type="text"
                     value={currentOffer.title}
                     onChange={(e) =>
-                      setCurrentOffer({ ...currentOffer, title: e.target.value })
+                      setCurrentOffer({
+                        ...currentOffer,
+                        title: e.target.value,
+                      })
                     }
                     className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Enter offer title"
@@ -504,8 +519,11 @@ const OfferPanel = () => {
                 {currentOffer.selectedVegetables.length > 0 && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Selected Vegetables ({currentOffer.selectedVegetables.length}
-                      {currentOffer.vegetableLimit && `/${currentOffer.vegetableLimit}`})
+                      Selected Vegetables (
+                      {currentOffer.selectedVegetables.length}
+                      {currentOffer.vegetableLimit &&
+                        `/${currentOffer.vegetableLimit}`}
+                      )
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {currentOffer.selectedVegetables.map((veg) => (
@@ -585,7 +603,9 @@ const OfferPanel = () => {
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-                  <span className="ml-2 text-gray-600">Loading vegetables...</span>
+                  <span className="ml-2 text-gray-600">
+                    Loading vegetables...
+                  </span>
                 </div>
               ) : (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -615,7 +635,9 @@ const OfferPanel = () => {
                               ? "bg-gray-100 border-gray-200 cursor-not-allowed opacity-60"
                               : "bg-white border-gray-200 hover:border-green-300 hover:shadow-sm"
                           }`}
-                          onClick={() => !isDisabled && handleVegSelect(vegetable)}
+                          onClick={() =>
+                            !isDisabled && handleVegSelect(vegetable)
+                          }
                         >
                           <div className="flex items-start gap-3">
                             <img
@@ -633,7 +655,10 @@ const OfferPanel = () => {
                                   {vegetable.name}
                                 </h4>
                                 {isSelected && (
-                                  <Check size={16} className="text-green-600 flex-shrink-0" />
+                                  <Check
+                                    size={16}
+                                    className="text-green-600 flex-shrink-0"
+                                  />
                                 )}
                               </div>
 
@@ -651,7 +676,8 @@ const OfferPanel = () => {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                   <span className="text-sm font-medium text-green-600 flex items-center gap-1">
-                                    <DollarSign size={12} />₹{vegetable.price}/kg
+                                    <DollarSign size={12} />₹{vegetable.price}
+                                    /kg
                                   </span>
                                   <span
                                     className={`text-xs flex items-center gap-1 ${
@@ -691,7 +717,9 @@ const OfferPanel = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Current Offers</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Current Offers
+        </h2>
 
         {/* Add Offer Button */}
         <div className="mb-4">
@@ -712,15 +740,23 @@ const OfferPanel = () => {
               </li>
             ) : (
               offers.map((offer) => (
-                <li key={offer._id || offer.id} className="px-6 py-4 hover:bg-gray-50">
+                <li
+                  key={offer._id || offer.id}
+                  className="px-6 py-4 hover:bg-gray-50"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{offer.title}</p>
-                      <p className="text-sm text-gray-500">{offer.description}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {offer.title}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {offer.description}
+                      </p>
                       <p className="text-sm text-gray-500">₹{offer.price}</p>
                       <p className="text-xs text-gray-400">
                         Vegetables:{" "}
-                        {Array.isArray(offer.vegetables) && offer.vegetables.length > 0
+                        {Array.isArray(offer.vegetables) &&
+                        offer.vegetables.length > 0
                           ? offer.vegetables
                               .map((veg) => veg.name || veg)
                               .join(", ")
