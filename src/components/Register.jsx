@@ -95,7 +95,7 @@ export default function AdminRegisterPage() {
     setSubmitMessage({ type: "", text: "" });
     startLoading();
     try {
-      const response = axios.post(
+      const response = await axios.post(
         `${import.meta.env.VITE_API_SERVER_URL}/api/auth/register`,
         {
           username: formData.username,
