@@ -95,12 +95,18 @@ export default function AdminRegisterPage() {
     setSubmitMessage({ type: "", text: "" });
     startLoading();
     try {
-      const response = await axios.post("/api/auth/register", {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        role: formData.role,
-      });
+      const response = await axios.post(
+        "/api/auth/register",
+        {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+        },
+        {
+          withCredentials: true,
+        }
+      );
 
       // ✅ success check fixed
       if (response.status === 201 || response.data.message) {
