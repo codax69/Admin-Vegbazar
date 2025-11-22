@@ -19,7 +19,6 @@ const AddVegetableForm = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
-
   // Helper function to calculate prices from 1kg price
   const calculatePrices = (price1kg) => {
     if (!price1kg || isNaN(price1kg)) return null;

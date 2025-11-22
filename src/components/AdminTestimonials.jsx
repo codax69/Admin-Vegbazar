@@ -10,7 +10,6 @@ const AdminTestimonials = () => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
-
   // Fetch all testimonials
   const fetchTestimonials = async () => {
     try {

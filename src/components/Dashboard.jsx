@@ -17,7 +17,7 @@ const Dashboard = () => {
   const [offers, setOffers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
-
+  
   const navigationItems = [
     { id: "dashboard", name: "Dashboard", icon: "🏠" },
     { id: "vegetables", name: "Vegetables", icon: "🥕" },

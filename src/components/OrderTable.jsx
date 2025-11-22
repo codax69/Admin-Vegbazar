@@ -15,7 +15,6 @@ const OrderTable = () => {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterPayment, setFilterPayment] = useState("");
   const [filterDate, setFilterDate] = useState("");
-
   const OrdersApiCall = async () => {
     setLoading(true);
     startLoading();

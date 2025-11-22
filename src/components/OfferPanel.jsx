@@ -21,7 +21,6 @@ const OfferPanel = () => {
     totalWeight: "",
     weight: "",
   });
-
   // Vegetable selection states
   const [vegetables, setVegetables] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -152,7 +151,7 @@ const OfferPanel = () => {
           },
         }
       );
-
+     
       alert("Offer updated successfully!");
       setShowEditForm(false);
       setSelectedOffer(null);
