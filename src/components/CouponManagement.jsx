@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_SERVER_URL;
 
@@ -180,7 +181,8 @@ const CouponManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all"); // all, active, inactive
+  const [filterStatus, setFilterStatus] = useState("all");
+  const { token } = useAuth();
 
   const [formData, setFormData] = useState({
     code: "",
@@ -200,9 +202,17 @@ const CouponManagement = () => {
     setLoading(true);
     setError("");
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/coupons`,{
-        withCredentials: true,
-      });
+      const response = await axios.get(
+        `${API_BASE_URL}/api/coupons`,
+        {
+          withCredentials: true,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       // Safely handle the response - ensure it's always an array
       const couponsData = response.data?.data.coupons;
       console.log(couponsData);
@@ -271,6 +281,11 @@ const CouponManagement = () => {
           payload,
           {
             withCredentials: true,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
         setCoupons((prev) => [response.data.data, ...prev]);
@@ -317,7 +332,12 @@ const CouponManagement = () => {
         const response = await axios.patch(
           `${API_BASE_URL}/api/coupons/${editingId}`,
           payload,
-          { withCredentials: true }
+          { withCredentials: true },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         setCoupons((prev) =>
           prev.map((c) => (c._id === editingId ? response.data.data : c))
@@ -349,9 +369,17 @@ const CouponManagement = () => {
     setSuccess("");
     setLoading(true);
     try {
-      await axios.delete(`${API_BASE_URL}/api/coupons/${id}`, {
-        withCredentials: true,
-      });
+      await axios.delete(
+        `${API_BASE_URL}/api/coupons/${id}`,
+        {
+          withCredentials: true,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setCoupons((prev) => prev.filter((c) => c._id !== id));
       setSuccess("Coupon deleted successfully!");
     } catch (err) {
