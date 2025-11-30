@@ -7,6 +7,7 @@ import AddCityForm from "./AddCityForm";
 import axios from "axios";
 import { useLoading } from "../context/LoadingContext";
 import AdminTestimonials from "./AdminTestimonials";
+import CouponManagement from "./CouponManagement";
 
 const Dashboard = () => {
   const { startLoading, stopLoading } = useLoading();
@@ -17,7 +18,7 @@ const Dashboard = () => {
   const [offers, setOffers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
-  
+
   const navigationItems = [
     { id: "dashboard", name: "Dashboard", icon: "🏠" },
     { id: "vegetables", name: "Vegetables", icon: "🥕" },
@@ -26,6 +27,7 @@ const Dashboard = () => {
     { id: "AddCity", name: "Add City", icon: "🌆" },
     { id: "add-vegetable", name: "Add Vegetable", icon: "➕" },
     { id: "testimonials", name: "Testimonials", icon: "💬" },
+    { id: "coupon_codes", name: "Coupon Codes", icon: "🎟️" },
   ];
   const fetchData = async () => {
     startLoading();
@@ -169,6 +171,8 @@ const Dashboard = () => {
         return <AddVegetableForm />;
       case "testimonials":
         return <AdminTestimonials />;
+      case "coupon_codes":
+        return <CouponManagement />;
       default:
         return (
           <div>

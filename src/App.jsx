@@ -12,6 +12,7 @@ import axios from "axios";
 import { useLoading } from "./context/LoadingContext";
 import { useAuth } from "./context/AuthContext";
 import AdminTestimonials from "./components/AdminTestimonials";
+import CouponManagement from "./components/CouponManagement";
 
 function App() {
   const Navigate = useNavigate();
@@ -61,6 +62,7 @@ function App() {
           <Route path="/stock" element={<StockPanel />} />
           <Route path="/offers" element={<OfferPanel />} />
           <Route path="/testimonials" element={<AdminTestimonials />} />
+          <Route path="/coupon_codes" element={<CouponManagement/>}/>
         </Route>
       </Route>
     </Routes>
