@@ -177,6 +177,9 @@ const VegetableTable = () => {
                     Name
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                     Stock (kg)
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
@@ -197,197 +200,295 @@ const VegetableTable = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {vegetables.map((veg) => (
-                  <React.Fragment key={veg._id}>
-                    <tr className="hover:bg-gray-50 transition-colors duration-150">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <img
-                          src={veg.image}
-                          alt={veg.name}
-                          className="h-12 w-12 rounded-full object-cover border"
-                          onError={(e) => {
-                            e.target.src = "/placeholder-vegetable.png";
-                          }}
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {veg.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-2">
-                          <span
-                            className={`px-2 py-1 inline-flex text-xs font-semibold rounded-full
-                              ${
-                                veg.stockKg >= 10
-                                  ? "bg-green-100 text-green-800"
-                                  : veg.stockKg >= 2
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
+                {vegetables.map((veg) => {
+                  const isOutOfStock = veg.outOfStock || veg.stockKg === 0;
+                  
+                  return (
+                    <React.Fragment key={veg._id}>
+                      <tr className={`transition-colors duration-150 ${
+                        isOutOfStock ? "bg-red-50" : "hover:bg-gray-50"
+                      }`}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="relative">
+                            <img
+                              src={veg.image}
+                              alt={veg.name}
+                              className={`h-12 w-12 rounded-full object-cover border ${
+                                isOutOfStock ? "grayscale opacity-60" : ""
                               }`}
-                          >
-                            {veg.stockKg} kg
-                          </span>
-                          {veg.stockKg <= 2 && (
-                            <span className="text-red-500 text-xs">
-                              Low Stock!
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
-                        ₹{veg.prices?.weight1kg || veg.price}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
-                        {veg.offer || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {veg.screenNumber || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={() => toggleRowExpand(veg._id)}
-                          className="inline-flex items-center text-blue-600 hover:text-blue-800 transition"
-                          title="View all price variants"
-                        >
-                          <ChevronDown
-                            size={18}
-                            className={`transform transition-transform ${
-                              expandedRows[veg._id] ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="flex justify-center space-x-2">
-                          <button
-                            onClick={() => handleEdit(veg)}
-                            className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition text-sm"
-                            title="Edit all details"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(veg._id)}
-                            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition text-sm"
-                            title="Delete vegetable"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-
-                    {/* Expanded Price Details Row */}
-                    {expandedRows[veg._id] && (
-                      <tr className="bg-gray-50">
-                        <td colSpan="8" className="px-6 py-4">
-                          <div className="space-y-4">
-                            {/* VegBazar Prices */}
-                            <div>
-                              <h4 className="font-semibold text-gray-800 mb-2">
-                                VegBazar Prices
-                              </h4>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="bg-blue-50 p-3 rounded border border-blue-200">
-                                  <p className="text-xs text-gray-600">1 kg</p>
-                                  <p className="text-lg font-bold text-blue-600">
-                                    ₹{veg.prices?.weight1kg}
-                                  </p>
-                                </div>
-                                <div className="bg-blue-50 p-3 rounded border border-blue-200">
-                                  <p className="text-xs text-gray-600">500g</p>
-                                  <p className="text-lg font-bold text-blue-600">
-                                    ₹{veg.prices?.weight500g}
-                                  </p>
-                                </div>
-                                <div className="bg-blue-50 p-3 rounded border border-blue-200">
-                                  <p className="text-xs text-gray-600">250g</p>
-                                  <p className="text-lg font-bold text-blue-600">
-                                    ₹{veg.prices?.weight250g}
-                                  </p>
-                                </div>
-                                <div className="bg-blue-50 p-3 rounded border border-blue-200">
-                                  <p className="text-xs text-gray-600">100g</p>
-                                  <p className="text-lg font-bold text-blue-600">
-                                    ₹{veg.prices?.weight100g}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Market Prices */}
-                            <div>
-                              <h4 className="font-semibold text-gray-800 mb-2">
-                                Market Prices (Reference)
-                              </h4>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="bg-green-50 p-3 rounded border border-green-200">
-                                  <p className="text-xs text-gray-600">1 kg</p>
-                                  <p className="text-lg font-bold text-green-600">
-                                    ₹{veg.marketPrices?.weight1kg}
-                                  </p>
-                                </div>
-                                <div className="bg-green-50 p-3 rounded border border-green-200">
-                                  <p className="text-xs text-gray-600">500g</p>
-                                  <p className="text-lg font-bold text-green-600">
-                                    ₹{veg.marketPrices?.weight500g}
-                                  </p>
-                                </div>
-                                <div className="bg-green-50 p-3 rounded border border-green-200">
-                                  <p className="text-xs text-gray-600">250g</p>
-                                  <p className="text-lg font-bold text-green-600">
-                                    ₹{veg.marketPrices?.weight250g}
-                                  </p>
-                                </div>
-                                <div className="bg-green-50 p-3 rounded border border-green-200">
-                                  <p className="text-xs text-gray-600">100g</p>
-                                  <p className="text-lg font-bold text-green-600">
-                                    ₹{veg.marketPrices?.weight100g}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Savings */}
-                            <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
-                              <p className="text-sm font-semibold text-yellow-800">
-                                Savings Comparison (1kg):₹
-                                {(
-                                  veg.marketPrices?.weight1kg -
-                                  veg.prices?.weight1kg
-                                ).toFixed(2)}{" "}
-                                (
-                                {(
-                                  ((veg.marketPrices?.weight1kg -
-                                    veg.prices?.weight1kg) /
-                                    veg.marketPrices?.weight1kg) *
-                                  100
-                                ).toFixed(1)}
-                                %)
-                              </p>
-                            </div>
-
-                            {/* Description */}
-                            {veg.description && (
-                              <div className="bg-gray-100 p-3 rounded">
-                                <p className="text-sm text-gray-700">
-                                  <strong>Description:</strong> {veg.description}
-                                </p>
+                              onError={(e) => {
+                                e.target.src = "/placeholder-vegetable.png";
+                              }}
+                            />
+                            {isOutOfStock && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="bg-red-600 text-white text-[8px] font-bold px-1 py-0.5 rounded">
+                                  OUT
+                                </span>
                               </div>
                             )}
                           </div>
                         </td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                          isOutOfStock ? "text-gray-500" : "text-gray-900"
+                        }`}>
+                          {veg.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {isOutOfStock ? (
+                            <span className="px-3 py-1 inline-flex text-xs font-bold rounded-full bg-red-600 text-white">
+                              OUT OF STOCK
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 inline-flex text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                              In Stock
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-2">
+                            <span
+                              className={`px-2 py-1 inline-flex text-xs font-semibold rounded-full
+                                ${
+                                  veg.stockKg === 0
+                                    ? "bg-red-600 text-white"
+                                    : veg.stockKg >= 10
+                                    ? "bg-green-100 text-green-800"
+                                    : veg.stockKg >= 2
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
+                            >
+                              {veg.stockKg} kg
+                            </span>
+                            {veg.stockKg > 0 && veg.stockKg <= 2 && (
+                              <span className="text-red-500 text-xs">
+                                Low Stock!
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-bold ${
+                          isOutOfStock ? "text-gray-400" : "text-green-600"
+                        }`}>
+                          ₹{veg.prices?.weight1kg || veg.price}
+                        </td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                          isOutOfStock ? "text-gray-400" : "text-blue-600"
+                        }`}>
+                          {veg.offer || "-"}
+                        </td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                          isOutOfStock ? "text-gray-400" : "text-gray-700"
+                        }`}>
+                          {veg.screenNumber || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <button
+                            onClick={() => toggleRowExpand(veg._id)}
+                            className="inline-flex items-center text-blue-600 hover:text-blue-800 transition"
+                            title="View all price variants"
+                          >
+                            <ChevronDown
+                              size={18}
+                              className={`transform transition-transform ${
+                                expandedRows[veg._id] ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="flex justify-center space-x-2">
+                            <button
+                              onClick={() => handleEdit(veg)}
+                              className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition text-sm"
+                              title="Edit all details"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(veg._id)}
+                              className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition text-sm"
+                              title="Delete vegetable"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
                       </tr>
-                    )}
-                  </React.Fragment>
-                ))}
+
+                      {/* Expanded Price Details Row */}
+                      {expandedRows[veg._id] && (
+                        <tr className={isOutOfStock ? "bg-red-50" : "bg-gray-50"}>
+                          <td colSpan="9" className="px-6 py-4">
+                            <div className="space-y-4">
+                              {/* Out of Stock Warning */}
+                              {isOutOfStock && (
+                                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                  <p className="font-bold">⚠️ This vegetable is currently out of stock</p>
+                                  <p className="text-sm">Update the stock quantity to make it available again.</p>
+                                </div>
+                              )}
+
+                              {/* VegBazar Prices */}
+                              <div>
+                                <h4 className="font-semibold text-gray-800 mb-2">
+                                  VegBazar Prices
+                                </h4>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                  <div className={`p-3 rounded border ${
+                                    isOutOfStock 
+                                      ? "bg-gray-100 border-gray-300" 
+                                      : "bg-blue-50 border-blue-200"
+                                  }`}>
+                                    <p className="text-xs text-gray-600">1 kg</p>
+                                    <p className={`text-lg font-bold ${
+                                      isOutOfStock ? "text-gray-500" : "text-blue-600"
+                                    }`}>
+                                      ₹{veg.prices?.weight1kg}
+                                    </p>
+                                  </div>
+                                  <div className={`p-3 rounded border ${
+                                    isOutOfStock 
+                                      ? "bg-gray-100 border-gray-300" 
+                                      : "bg-blue-50 border-blue-200"
+                                  }`}>
+                                    <p className="text-xs text-gray-600">500g</p>
+                                    <p className={`text-lg font-bold ${
+                                      isOutOfStock ? "text-gray-500" : "text-blue-600"
+                                    }`}>
+                                      ₹{veg.prices?.weight500g}
+                                    </p>
+                                  </div>
+                                  <div className={`p-3 rounded border ${
+                                    isOutOfStock 
+                                      ? "bg-gray-100 border-gray-300" 
+                                      : "bg-blue-50 border-blue-200"
+                                  }`}>
+                                    <p className="text-xs text-gray-600">250g</p>
+                                    <p className={`text-lg font-bold ${
+                                      isOutOfStock ? "text-gray-500" : "text-blue-600"
+                                    }`}>
+                                      ₹{veg.prices?.weight250g}
+                                    </p>
+                                  </div>
+                                  <div className={`p-3 rounded border ${
+                                    isOutOfStock 
+                                      ? "bg-gray-100 border-gray-300" 
+                                      : "bg-blue-50 border-blue-200"
+                                  }`}>
+                                    <p className="text-xs text-gray-600">100g</p>
+                                    <p className={`text-lg font-bold ${
+                                      isOutOfStock ? "text-gray-500" : "text-blue-600"
+                                    }`}>
+                                      ₹{veg.prices?.weight100g}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Market Prices */}
+                              <div>
+                                <h4 className="font-semibold text-gray-800 mb-2">
+                                  Market Prices (Reference)
+                                </h4>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                  <div className={`p-3 rounded border ${
+                                    isOutOfStock 
+                                      ? "bg-gray-100 border-gray-300" 
+                                      : "bg-green-50 border-green-200"
+                                  }`}>
+                                    <p className="text-xs text-gray-600">1 kg</p>
+                                    <p className={`text-lg font-bold ${
+                                      isOutOfStock ? "text-gray-500" : "text-green-600"
+                                    }`}>
+                                      ₹{veg.marketPrices?.weight1kg}
+                                    </p>
+                                  </div>
+                                  <div className={`p-3 rounded border ${
+                                    isOutOfStock 
+                                      ? "bg-gray-100 border-gray-300" 
+                                      : "bg-green-50 border-green-200"
+                                  }`}>
+                                    <p className="text-xs text-gray-600">500g</p>
+                                    <p className={`text-lg font-bold ${
+                                      isOutOfStock ? "text-gray-500" : "text-green-600"
+                                    }`}>
+                                      ₹{veg.marketPrices?.weight500g}
+                                    </p>
+                                  </div>
+                                  <div className={`p-3 rounded border ${
+                                    isOutOfStock 
+                                      ? "bg-gray-100 border-gray-300" 
+                                      : "bg-green-50 border-green-200"
+                                  }`}>
+                                    <p className="text-xs text-gray-600">250g</p>
+                                    <p className={`text-lg font-bold ${
+                                      isOutOfStock ? "text-gray-500" : "text-green-600"
+                                    }`}>
+                                      ₹{veg.marketPrices?.weight250g}
+                                    </p>
+                                  </div>
+                                  <div className={`p-3 rounded border ${
+                                    isOutOfStock 
+                                      ? "bg-gray-100 border-gray-300" 
+                                      : "bg-green-50 border-green-200"
+                                  }`}>
+                                    <p className="text-xs text-gray-600">100g</p>
+                                    <p className={`text-lg font-bold ${
+                                      isOutOfStock ? "text-gray-500" : "text-green-600"
+                                    }`}>
+                                      ₹{veg.marketPrices?.weight100g}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Savings */}
+                              {!isOutOfStock && (
+                                <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
+                                  <p className="text-sm font-semibold text-yellow-800">
+                                    Savings Comparison (1kg): ₹
+                                    {(
+                                      veg.marketPrices?.weight1kg -
+                                      veg.prices?.weight1kg
+                                    ).toFixed(2)}{" "}
+                                    (
+                                    {(
+                                      ((veg.marketPrices?.weight1kg -
+                                        veg.prices?.weight1kg) /
+                                        veg.marketPrices?.weight1kg) *
+                                      100
+                                    ).toFixed(1)}
+                                    %)
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Description */}
+                              {veg.description && (
+                                <div className={`p-3 rounded ${
+                                  isOutOfStock ? "bg-gray-100" : "bg-gray-100"
+                                }`}>
+                                  <p className="text-sm text-gray-700">
+                                    <strong>Description:</strong> {veg.description}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
 
         {/* Summary Stats */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-green-50 p-4 rounded-lg">
             <div className="text-sm text-green-600 font-medium">
               Total Vegetables
@@ -396,18 +497,26 @@ const VegetableTable = () => {
               {vegetables.length}
             </div>
           </div>
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="text-sm text-blue-600 font-medium">
+              Available in Stock
+            </div>
+            <div className="text-2xl font-bold text-blue-800">
+              {vegetables.filter((v) => !v.outOfStock && v.stockKg > 0).length}
+            </div>
+          </div>
           <div className="bg-yellow-50 p-4 rounded-lg">
             <div className="text-sm text-yellow-600 font-medium">
               Low Stock Items
             </div>
             <div className="text-2xl font-bold text-yellow-800">
-              {vegetables.filter((v) => v.stockKg <= 2).length}
+              {vegetables.filter((v) => v.stockKg > 0 && v.stockKg <= 2).length}
             </div>
           </div>
           <div className="bg-red-50 p-4 rounded-lg">
             <div className="text-sm text-red-600 font-medium">Out of Stock</div>
             <div className="text-2xl font-bold text-red-800">
-              {vegetables.filter((v) => v.stockKg === 0).length}
+              {vegetables.filter((v) => v.outOfStock || v.stockKg === 0).length}
             </div>
           </div>
         </div>
