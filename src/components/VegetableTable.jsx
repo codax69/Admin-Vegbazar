@@ -259,7 +259,8 @@ const VegetableTable = () => {
                                     : "bg-red-100 text-red-800"
                                 }`}
                             >
-                              {veg.stockKg} kg
+                              {/* ✅ FIXED: Show 1 decimal place */}
+                              {veg.stockKg.toFixed(1)} kg
                             </span>
                             {veg.stockKg > 0 && veg.stockKg <= 2 && (
                               <span className="text-red-500 text-xs">
