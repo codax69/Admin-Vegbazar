@@ -3,6 +3,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useLoading } from "../context/LoadingContext";
 import { toast } from "react-hot-toast";
+import OrderCard from "./OrderCard";
 
 const OrderTable = () => {
   const { startLoading, stopLoading } = useLoading();
@@ -573,14 +574,16 @@ const OrderTable = () => {
       </div>
       {/* Card View */}
       {viewMode === "cards" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+        <div className="space-y-3 sm:space-y-4">
           {filteredOrders.length > 0 ? (
             filteredOrders.map((order) => (
               <OrderCard key={order.orderId} order={order} />
             ))
           ) : (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-500 text-lg">No orders found</p>
+            <div className="bg-white rounded-lg shadow-md p-12 text-center">
+              <p className="text-gray-500 text-lg font-medium">
+                No orders found
+              </p>
             </div>
           )}
         </div>
@@ -823,7 +826,7 @@ const OrderTable = () => {
           </div>
         </div>
       )}
-      
+
       {/* Status Update Modal */}
       <StatusUpdateModal />
       {/* Order Detail Modal */}
