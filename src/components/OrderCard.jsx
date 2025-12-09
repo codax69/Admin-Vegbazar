@@ -58,7 +58,7 @@ const OrderCard = ({ order }) => {
             <span className="block text-gray-500">{formatTime(order.orderDate)}</span>
           </div>
           <span className="font-semibold text-[#0e540b] text-[10px] sm:text-xs whitespace-nowrap">
-            {order.orderType === 'custom' ? '🛒 Custom' : '📦 Basket'}
+            {order.orderType === 'basket' ? 'Basket' : 'Custom '}
           </span>
         </div>
       </div>

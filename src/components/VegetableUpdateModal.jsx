@@ -3,6 +3,20 @@ import axios from "axios";
 import { useLoading } from "../context/LoadingContext";
 import { useAuth } from "../context/AuthContext";
 
+const ROUND2 = (n) => Number(Number(n || 0).toFixed(2));
+const calcBlock = (p, factors) =>
+  p > 0
+    ? {
+        weight1kg: ROUND2(p),
+        weight500g: ROUND2(p * factors.w500),
+        weight250g: ROUND2(p * factors.w250),
+        weight100g: ROUND2(p * factors.w100),
+      }
+    : null;
+
+const vegFactors = { w500: 0.58, w250: 0.36, w100: 0.16 };
+const marketFactors = { w500: 0.6, w250: 0.4, w100: 0.2 };
+
 const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
   const { token } = useAuth();
   const { startLoading, stopLoading } = useLoading();
@@ -24,9 +38,9 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
     if (vegetable) {
       setFormData({
         name: vegetable.name || "",
-        vegBazarPrice1kg: vegetable.prices?.weight1kg || "",
-        marketPrice1kg: vegetable.marketPrices?.weight1kg || "",
-        stockKg: vegetable.stockKg || "",
+        vegBazarPrice1kg: vegetable.prices?.weight1kg ?? "",
+        marketPrice1kg: vegetable.marketPrices?.weight1kg ?? "",
+        stockKg: vegetable.stockKg ?? "",
         description: vegetable.description || "",
         image: vegetable.image || "",
         offer: vegetable.offer || "",
@@ -37,118 +51,135 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
 
   // Memoized calculations
   const calculations = useMemo(() => {
-    const vPrice = parseFloat(formData.vegBazarPrice1kg);
-    const mPrice = parseFloat(formData.marketPrice1kg);
-    const stock = parseFloat(formData.stockKg);
-    
-    const vegBazarPrices = vPrice > 0 ? {
-      weight1kg: Math.round(vPrice * 100) / 100,
-      weight500g: Math.round((vPrice / 2) * 100) / 100,
-      weight250g: Math.round((vPrice / 4) * 100) / 100,
-      weight100g: Math.round((vPrice / 10) * 100) / 100,
-    } : null;
+    const vPrice = Number(formData.vegBazarPrice1kg) || 0;
+    const mPrice = Number(formData.marketPrice1kg) || 0;
+    const stock = Number(formData.stockKg) || 0;
 
-    const marketPrices = mPrice > 0 ? {
-      weight1kg: Math.round(mPrice * 100) / 100,
-      weight500g: Math.round((mPrice / 2) * 100) / 100,
-      weight250g: Math.round((mPrice / 4) * 100) / 100,
-      weight100g: Math.round((mPrice / 10) * 100) / 100,
-    } : null;
+    const vegBazarPrices = calcBlock(vPrice, vegFactors);
+    const marketPrices = calcBlock(mPrice, marketFactors);
 
-    const savings = (vPrice > 0 && mPrice > 0) ? {
-      amount: (mPrice - vPrice).toFixed(2),
-      percentage: (((mPrice - vPrice) / mPrice) * 100).toFixed(1),
-      ratio: (mPrice / vPrice).toFixed(2)
-    } : null;
+    const savings =
+      vPrice > 0 && mPrice > 0
+        ? {
+            amount: ROUND2(mPrice - vPrice),
+            percentage: Number((((mPrice - vPrice) / mPrice) * 100).toFixed(1)),
+            ratio: Number((mPrice / vPrice).toFixed(2)),
+          }
+        : null;
 
     return {
       vegBazarPrices,
       marketPrices,
       savings,
-      isOutOfStock: stock <= 0,
-      isLowStock: stock > 0 && stock < 5,
+      // Use the same threshold as your model: out of stock if stock < 0.25
+      isOutOfStock: stock < 0.25,
+      isLowStock: stock >= 0.25 && stock < 5,
     };
   }, [formData.vegBazarPrice1kg, formData.marketPrice1kg, formData.stockKg]);
 
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
   const markOutOfStock = useCallback(() => {
-    setFormData(prev => ({ ...prev, stockKg: "0" }));
+    setFormData((prev) => ({ ...prev, stockKg: "0" }));
   }, []);
 
   const validateForm = useCallback(() => {
     const errors = [];
-    if (!formData.name.trim()) errors.push("Name is required");
-    if (!formData.vegBazarPrice1kg || parseFloat(formData.vegBazarPrice1kg) <= 0)
+    if (!formData.name || !formData.name.trim()) errors.push("Name is required");
+    if (!formData.vegBazarPrice1kg || Number(formData.vegBazarPrice1kg) <= 0)
       errors.push("Valid VegBazar price is required");
-    if (!formData.marketPrice1kg || parseFloat(formData.marketPrice1kg) <= 0)
+    if (!formData.marketPrice1kg || Number(formData.marketPrice1kg) <= 0)
       errors.push("Valid Market price is required");
-    if (formData.stockKg === "" || parseFloat(formData.stockKg) < 0)
-      errors.push("Stock cannot be negative");
+    if (formData.stockKg === "" || isNaN(Number(formData.stockKg)))
+      errors.push("Stock is required");
+    if (Number(formData.stockKg) < 0) errors.push("Stock cannot be negative");
     return errors;
   }, [formData]);
 
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    // Check if vegetable exists
-    if (!vegetable?._id) {
-      setError("No vegetable selected for update");
-      return;
-    }
+      if (!vegetable?._id) {
+        setError("No vegetable selected for update");
+        return;
+      }
 
-    const validationErrors = validateForm();
-    if (validationErrors.length > 0) {
-      setError(validationErrors.join(", "));
-      return;
-    }
+      const validationErrors = validateForm();
+      if (validationErrors.length > 0) {
+        setError(validationErrors.join(", "));
+        return;
+      }
 
-    startLoading();
-    setLoading(true);
-    setError(null);
+      startLoading();
+      setLoading(true);
+      setError(null);
 
-    try {
-      const stockValue = parseFloat(formData.stockKg);
-      const updateData = {
-        name: formData.name.trim(),
-        price1kg: parseFloat(formData.vegBazarPrice1kg),
-        marketPrice1kg: parseFloat(formData.marketPrice1kg),
-        stockKg: stockValue,
-        outOfStock: stockValue <= 0,
-        description: formData.description.trim(),
-        image: formData.image.trim(),
-        offer: formData.offer.trim(),
-        screenNumber: formData.screenNumber,
-      };
+      try {
+        const vPrice = Number(formData.vegBazarPrice1kg);
+        const mPrice = Number(formData.marketPrice1kg);
+        const stockValue = Number(formData.stockKg);
 
-      const response = await axios.patch(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${vegetable._id}`,
-        updateData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+        // Build prices objects that match your Mongoose model
+        const prices = calculations.vegBazarPrices ?? calcBlock(vPrice, vegFactors);
+        const marketPrices =
+          calculations.marketPrices ?? calcBlock(mPrice, marketFactors);
 
-      onUpdate(response.data.data);
-      onClose();
-    } catch (error) {
-      setError(error.response?.data?.message || error.message || "Failed to update vegetable");
-    } finally {
-      setLoading(false);
-      stopLoading();
-    }
-  }, [formData, validateForm, vegetable, token, onUpdate, onClose, startLoading, stopLoading]);
+        const updateData = {
+          name: formData.name.trim(),
+          prices,
+          marketPrices,
+          stockKg: stockValue,
+          outOfStock: stockValue < 0.25,
+          description: formData.description?.trim() || "",
+          image: formData.image?.trim() || "",
+          offer: formData.offer?.trim() || "",
+          screenNumber: formData.screenNumber || "",
+        };
+
+        const response = await axios.patch(
+          `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${vegetable._id}`,
+          updateData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        // handle common response shapes
+        const returned = response.data?.data ?? response.data ?? null;
+
+        if (returned) onUpdate(returned);
+        onClose();
+      } catch (err) {
+        setError(
+          err?.response?.data?.message || err.message || "Failed to update vegetable"
+        );
+      } finally {
+        setLoading(false);
+        stopLoading();
+      }
+    },
+    [
+      formData,
+      validateForm,
+      vegetable,
+      token,
+      onUpdate,
+      onClose,
+      startLoading,
+      stopLoading,
+      calculations,
+    ]
+  );
 
   const handleClose = useCallback(() => {
     setError(null);
     onClose();
   }, [onClose]);
 
-  // Don't render if modal is closed
   if (!isOpen) return null;
 
-  // Show error state if no vegetable data
   if (!vegetable) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -175,16 +206,14 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-2xl font-bold text-gray-900">Update Vegetable</h2>
-          <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+          <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-2xl">
+            ×
+          </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
-          {error && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-              {error}
-            </div>
-          )}
+          {error && <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>}
 
           {calculations.isOutOfStock && (
             <div className="mb-4 p-4 bg-orange-100 border-2 border-orange-400 rounded-lg flex items-center gap-2">
@@ -260,18 +289,12 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
                   min="0"
                   step="0.1"
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                    calculations.isOutOfStock 
-                      ? "border-red-300 bg-red-50 focus:ring-red-500" 
-                      : "border-gray-300 focus:ring-blue-500"
+                    calculations.isOutOfStock ? "border-red-300 bg-red-50 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
                   }`}
                   required
                 />
-                {calculations.isOutOfStock && (
-                  <p className="text-xs text-red-600 mt-1 font-medium">⚠️ Out of Stock</p>
-                )}
-                {calculations.isLowStock && (
-                  <p className="text-xs text-orange-600 mt-1 font-medium">⚠️ Low Stock - Only {formData.stockKg}kg</p>
-                )}
+                {calculations.isOutOfStock && <p className="text-xs text-red-600 mt-1 font-medium">⚠️ Out of Stock</p>}
+                {calculations.isLowStock && <p className="text-xs text-orange-600 mt-1 font-medium">⚠️ Low Stock - Only {formData.stockKg}kg</p>}
               </div>
 
               <div>
@@ -321,7 +344,9 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
                       src={formData.image}
                       alt="Preview"
                       className="w-32 h-32 object-cover rounded-md mx-auto"
-                      onError={(e) => { e.target.src = "/placeholder-vegetable.png"; }}
+                      onError={(e) => {
+                        e.target.src = "/placeholder-vegetable.png";
+                      }}
                     />
                   </div>
                 </div>
@@ -368,7 +393,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
               <div className="grid grid-cols-4 gap-2 text-center">
                 {Object.entries(calculations.vegBazarPrices).map(([key, val]) => (
                   <div key={key}>
-                    <p className="text-xs text-gray-600">{key.replace('weight', '')}</p>
+                    <p className="text-xs text-gray-600">{key.replace("weight", "")}</p>
                     <p className="text-lg font-bold text-blue-600">₹{val}</p>
                   </div>
                 ))}
@@ -383,7 +408,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
               <div className="grid grid-cols-4 gap-2 text-center">
                 {Object.entries(calculations.marketPrices).map(([key, val]) => (
                   <div key={key}>
-                    <p className="text-xs text-gray-600">{key.replace('weight', '')}</p>
+                    <p className="text-xs text-gray-600">{key.replace("weight", "")}</p>
                     <p className="text-lg font-bold text-green-600">₹{val}</p>
                   </div>
                 ))}
@@ -393,18 +418,10 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
 
           {/* Footer */}
           <div className="flex justify-end space-x-4 pt-4 border-t">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition"
-            >
+            <button type="button" onClick={handleClose} className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition disabled:bg-blue-400 disabled:cursor-not-allowed"
-            >
+            <button type="submit" disabled={loading} className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition disabled:bg-blue-400 disabled:cursor-not-allowed">
               {loading ? "Updating..." : "Update"}
             </button>
           </div>
@@ -413,3 +430,5 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
     </div>
   );
 };
+
+export default VegetableUpdateModal;
