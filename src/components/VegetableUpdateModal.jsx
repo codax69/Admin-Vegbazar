@@ -22,7 +22,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
   const { startLoading, stopLoading } = useLoading();
   const [formData, setFormData] = useState({
     name: "",
-    vegBazarPrice1kg: "",
+    price1kg: "",
     marketPrice1kg: "",
     stockKg: "",
     description: "",
@@ -38,8 +38,9 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
     if (vegetable) {
       setFormData({
         name: vegetable.name || "",
-        vegBazarPrice1kg: vegetable.prices?.weight1kg ?? "",
-        marketPrice1kg: vegetable.marketPrices?.weight1kg ?? "",
+        price1kg: vegetable.prices?.weight1kg ?? vegetable.price1kg ?? "",
+        marketPrice1kg:
+          vegetable.marketPrices?.weight1kg ?? vegetable.marketPrice1kg ?? "",
         stockKg: vegetable.stockKg ?? "",
         description: vegetable.description || "",
         image: vegetable.image || "",
@@ -51,7 +52,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
 
   // Memoized calculations
   const calculations = useMemo(() => {
-    const vPrice = Number(formData.vegBazarPrice1kg) || 0;
+    const vPrice = Number(formData.price1kg) || 0;
     const mPrice = Number(formData.marketPrice1kg) || 0;
     const stock = Number(formData.stockKg) || 0;
 
@@ -71,11 +72,10 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
       vegBazarPrices,
       marketPrices,
       savings,
-      // Use the same threshold as your model: out of stock if stock < 0.25
       isOutOfStock: stock < 0.25,
       isLowStock: stock >= 0.25 && stock < 5,
     };
-  }, [formData.vegBazarPrice1kg, formData.marketPrice1kg, formData.stockKg]);
+  }, [formData.price1kg, formData.marketPrice1kg, formData.stockKg]);
 
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -89,7 +89,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
   const validateForm = useCallback(() => {
     const errors = [];
     if (!formData.name || !formData.name.trim()) errors.push("Name is required");
-    if (!formData.vegBazarPrice1kg || Number(formData.vegBazarPrice1kg) <= 0)
+    if (!formData.price1kg || Number(formData.price1kg) <= 0)
       errors.push("Valid VegBazar price is required");
     if (!formData.marketPrice1kg || Number(formData.marketPrice1kg) <= 0)
       errors.push("Valid Market price is required");
@@ -119,19 +119,14 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
       setError(null);
 
       try {
-        const vPrice = Number(formData.vegBazarPrice1kg);
+        const vPrice = Number(formData.price1kg);
         const mPrice = Number(formData.marketPrice1kg);
         const stockValue = Number(formData.stockKg);
 
-        // Build prices objects that match your Mongoose model
-        const prices = calculations.vegBazarPrices ?? calcBlock(vPrice, vegFactors);
-        const marketPrices =
-          calculations.marketPrices ?? calcBlock(mPrice, marketFactors);
-
         const updateData = {
           name: formData.name.trim(),
-          prices,
-          marketPrices,
+          price1kg: ROUND2(vPrice),
+          marketPrice1kg: ROUND2(mPrice),
           stockKg: stockValue,
           outOfStock: stockValue < 0.25,
           description: formData.description?.trim() || "",
@@ -146,9 +141,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        // handle common response shapes
         const returned = response.data?.data ?? response.data ?? null;
-
         if (returned) onUpdate(returned);
         onClose();
       } catch (err) {
@@ -169,7 +162,6 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
       onClose,
       startLoading,
       stopLoading,
-      calculations,
     ]
   );
 
@@ -182,15 +174,15 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
 
   if (!vegetable) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
           <div className="text-center">
             <div className="text-red-600 text-5xl mb-4">⚠️</div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Error</h3>
+            <h3 className="text-xl font-bold text-black mb-2">Error</h3>
             <p className="text-gray-600 mb-6">No vegetable data available to update</p>
             <button
               onClick={handleClose}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+              className="px-6 py-2 bg-[#0e540b] text-white rounded-md hover:brightness-90 transition"
             >
               Close
             </button>
@@ -201,22 +193,26 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-900">Update Vegetable</h2>
-          <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-2xl">
+        <div className="flex justify-between items-center p-6 border-b bg-black rounded-t-lg">
+          <h2 className="text-2xl font-bold text-white">Update Vegetable</h2>
+          <button onClick={handleClose} className="text-white hover:text-[#0e540b] text-2xl">
             ×
           </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
-          {error && <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>}
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
+          )}
 
           {calculations.isOutOfStock && (
-            <div className="mb-4 p-4 bg-orange-100 border-2 border-orange-400 rounded-lg flex items-center gap-2">
+            <div className="mb-4 p-4 bg-orange-50 border-2 border-orange-400 rounded-lg flex items-center gap-2">
               <span className="text-2xl">⚠️</span>
               <div>
                 <p className="font-bold text-orange-800">Out of Stock</p>
@@ -229,34 +225,36 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
             {/* Left Column */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                <label className="block text-sm font-medium text-black mb-2">Name *</label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">VegBazar Price (1kg) ₹ *</label>
+                <label className="block text-sm font-medium text-black mb-2">
+                  VegBazar Price (1kg) ₹ *
+                </label>
                 <input
                   type="number"
-                  name="vegBazarPrice1kg"
-                  value={formData.vegBazarPrice1kg}
+                  name="price1kg"
+                  value={formData.price1kg}
                   onChange={handleInputChange}
                   min="0"
                   step="0.01"
-                  className="w-full px-3 py-2 border border-blue-300 bg-blue-50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-[#0e540b]/40 bg-[#0e540b]/5 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">Other weights calculated automatically</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Market Price (1kg) ₹ *</label>
+                <label className="block text-sm font-medium text-black mb-2">Market Price (1kg) ₹ *</label>
                 <input
                   type="number"
                   name="marketPrice1kg"
@@ -264,7 +262,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
                   onChange={handleInputChange}
                   min="0"
                   step="0.01"
-                  className="w-full px-3 py-2 border border-green-300 bg-green-50 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-[#0e540b]/40 bg-[#0e540b]/5 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">Other weights calculated automatically</p>
@@ -272,11 +270,11 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-gray-700">Stock (kg) *</label>
+                  <label className="block text-sm font-medium text-black">Stock (kg) *</label>
                   <button
                     type="button"
                     onClick={markOutOfStock}
-                    className="text-xs px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition font-medium"
+                    className="text-xs px-3 py-1 bg-[#0e540b]/10 text-[#0e540b] rounded-md hover:bg-[#0e540b]/20 transition font-medium"
                   >
                     Mark Out of Stock
                   </button>
@@ -289,7 +287,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
                   min="0"
                   step="0.1"
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                    calculations.isOutOfStock ? "border-red-300 bg-red-50 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
+                    calculations.isOutOfStock ? "border-red-300 bg-red-50 focus:ring-red-500" : "border-gray-300 focus:ring-[#0e540b]"
                   }`}
                   required
                 />
@@ -298,26 +296,26 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Offer</label>
+                <label className="block text-sm font-medium text-black mb-2">Offer</label>
                 <input
                   type="text"
                   name="offer"
                   value={formData.offer}
                   onChange={handleInputChange}
                   placeholder="e.g., 10% off"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Screen Number</label>
+                <label className="block text-sm font-medium text-black mb-2">Screen Number</label>
                 <input
                   type="text"
                   name="screenNumber"
                   value={formData.screenNumber}
                   onChange={handleInputChange}
                   placeholder="e.g., 1-5"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
                 />
               </div>
             </div>
@@ -325,20 +323,20 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
             {/* Right Column */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
+                <label className="block text-sm font-medium text-black mb-2">Image URL</label>
                 <input
                   type="url"
                   name="image"
                   value={formData.image}
                   onChange={handleInputChange}
                   placeholder="https://example.com/image.jpg"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
                 />
               </div>
 
               {formData.image && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Preview</label>
+                  <label className="block text-sm font-medium text-black mb-2">Preview</label>
                   <div className="border border-gray-300 rounded-md p-2">
                     <img
                       src={formData.image}
@@ -353,14 +351,14 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <label className="block text-sm font-medium text-black mb-2">Description</label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
                   rows="5"
                   placeholder="Brief description..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b] resize-vertical"
                 />
               </div>
             </div>
@@ -368,19 +366,19 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
 
           {/* Savings */}
           {calculations.savings && (
-            <div className="mb-6 p-4 bg-yellow-50 rounded-lg border-2 border-yellow-300">
+            <div className="mb-6 p-4 bg-[#0e540b]/10 rounded-lg border border-[#0e540b]/20">
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <p className="text-xs text-gray-600 mb-1">Savings</p>
-                  <p className="text-2xl font-bold text-yellow-600">₹{calculations.savings.amount}</p>
+                  <p className="text-xs text-black mb-1">Savings</p>
+                  <p className="text-2xl font-bold text-[#0e540b]">₹{calculations.savings.amount}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600 mb-1">Percentage</p>
-                  <p className="text-2xl font-bold text-yellow-600">{calculations.savings.percentage}%</p>
+                  <p className="text-xs text-black mb-1">Percentage</p>
+                  <p className="text-2xl font-bold text-[#0e540b]">{calculations.savings.percentage}%</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600 mb-1">Ratio</p>
-                  <p className="text-2xl font-bold text-yellow-600">{calculations.savings.ratio}x</p>
+                  <p className="text-xs text-black mb-1">Ratio</p>
+                  <p className="text-2xl font-bold text-[#0e540b]">{calculations.savings.ratio}x</p>
                 </div>
               </div>
             </div>
@@ -388,13 +386,13 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
 
           {/* VegBazar Prices */}
           {calculations.vegBazarPrices && (
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 className="text-sm font-semibold text-blue-900 mb-3">📊 VegBazar Prices</h3>
+            <div className="mb-6 p-4 bg-[#0e540b]/5 rounded-lg border border-[#0e540b]/20">
+              <h3 className="text-sm font-semibold text-[#0e540b] mb-3">📊 VegBazar Prices</h3>
               <div className="grid grid-cols-4 gap-2 text-center">
                 {Object.entries(calculations.vegBazarPrices).map(([key, val]) => (
                   <div key={key}>
                     <p className="text-xs text-gray-600">{key.replace("weight", "")}</p>
-                    <p className="text-lg font-bold text-blue-600">₹{val}</p>
+                    <p className="text-lg font-bold text-[#0e540b]">₹{val}</p>
                   </div>
                 ))}
               </div>
@@ -403,13 +401,13 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
 
           {/* Market Prices */}
           {calculations.marketPrices && (
-            <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-              <h3 className="text-sm font-semibold text-green-900 mb-3">🏪 Market Prices</h3>
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-black mb-3">🏪 Market Prices</h3>
               <div className="grid grid-cols-4 gap-2 text-center">
                 {Object.entries(calculations.marketPrices).map(([key, val]) => (
                   <div key={key}>
                     <p className="text-xs text-gray-600">{key.replace("weight", "")}</p>
-                    <p className="text-lg font-bold text-green-600">₹{val}</p>
+                    <p className="text-lg font-bold text-black">₹{val}</p>
                   </div>
                 ))}
               </div>
@@ -418,10 +416,10 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
 
           {/* Footer */}
           <div className="flex justify-end space-x-4 pt-4 border-t">
-            <button type="button" onClick={handleClose} className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
+            <button type="button" onClick={handleClose} className="px-6 py-2 border border-gray-300 text-black rounded-md hover:bg-gray-50 transition">
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition disabled:bg-blue-400 disabled:cursor-not-allowed">
+            <button type="submit" disabled={loading} className="px-6 py-2 bg-[#0e540b] text-white rounded-md hover:brightness-90 transition disabled:opacity-60 disabled:cursor-not-allowed">
               {loading ? "Updating..." : "Update"}
             </button>
           </div>
