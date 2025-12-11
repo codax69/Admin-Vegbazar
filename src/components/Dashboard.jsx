@@ -1,34 +1,39 @@
 import React, { useEffect, useState } from "react";
-import AddVegetableForm from "./AddVegetableForm";
-import OfferPanel from "./OfferPanel";
-import OrderTable from "./OrderTable";
-import VegetableTable from "./VegetableTable";
-import AddCityForm from "./AddCityForm";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useLoading } from "../context/LoadingContext";
-import AdminTestimonials from "./AdminTestimonials";
-import CouponManagement from "./CouponManagement";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { startLoading, stopLoading } = useLoading();
-  const [activeRoute, setActiveRoute] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [vegetables, setVegetables] = useState([]);
   const [offers, setOffers] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [users, setUsers] = useState([]);
+
+  // Get current active route from URL pathname
+  const getActiveRoute = () => {
+    const path = location.pathname;
+    if (path === "/" || path === "/dashboard") return "dashboard";
+    return path.substring(1); // Remove leading slash
+  };
+
+  const activeRoute = getActiveRoute();
 
   const navigationItems = [
-    { id: "dashboard", name: "Dashboard", icon: "🏠" },
-    { id: "vegetables", name: "Vegetables", icon: "🥕" },
-    { id: "orders", name: "Orders", icon: "🛒" },
-    { id: "offers", name: "Offers", icon: "🏷️" },
-    { id: "AddCity", name: "Add City", icon: "🌆" },
-    { id: "add-vegetable", name: "Add Vegetable", icon: "➕" },
-    { id: "testimonials", name: "Testimonials", icon: "💬" },
-    { id: "coupon_codes", name: "Coupon Codes", icon: "🎟️" },
+    { id: "dashboard", name: "Dashboard", icon: "🏠", path: "/" },
+    { id: "vegetables", name: "Vegetables", icon: "🥕", path: "/vegetables" },
+    { id: "orders", name: "Orders", icon: "🛒", path: "/orders" },
+    { id: "offers", name: "Offers", icon: "🏷️", path: "/offers" },
+    { id: "AddCity", name: "Add City", icon: "🌆", path: "/add-city" },
+    { id: "add-vegetable", name: "Add Vegetable", icon: "➕", path: "/add-vegetable" },
+    { id: "testimonials", name: "Testimonials", icon: "💬", path: "/testimonials" },
+    { id: "coupon_codes", name: "Coupon Codes", icon: "🎟️", path: "/coupon_codes" },
+    { id: "OrderReport", name: "OrderReport", icon: "🍄‍🟫", path: "/orderReport" },
   ];
+
   const fetchData = async () => {
     startLoading();
     try {
@@ -46,15 +51,15 @@ const Dashboard = () => {
       stopLoading();
     }
   };
+
   useEffect(() => {
     fetchData();
   }, []);
+
   // Derived statistics
   const totalStockItems = vegetables.length;
   const activeOffers = offers.length;
-  const lowStockItems = vegetables.filter((v) => {
-    return v.stockKg <= 2;
-  }).length;
+  const lowStockItems = vegetables.filter((v) => v.stockKg <= 2).length;
   const todayOrders = orders.filter((o) => {
     const today = new Date().toISOString().split("T")[0];
     return o.orderDate?.startsWith(today);
@@ -112,82 +117,43 @@ const Dashboard = () => {
     },
   ];
 
-  const renderContent = () => {
-    switch (activeRoute) {
-      case "dashboard":
-        return (
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-              Dashboard Overview
-            </h2>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <p className="text-sm sm:text-base text-gray-600">
-                Welcome to the Vegbazar Admin Panel. Use the sidebar to navigate
-                to different sections.
-              </p>
-              <div className="mt-4 sm:mt-6 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                <div className="p-3 sm:p-4 border border-gray-200 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
-                    Recent Activity
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-600 mt-2">
-                    5 new orders in the last hour
-                  </p>
-                </div>
-                <div className="p-3 sm:p-4 border border-gray-200 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
-                    Quick Actions
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-600 mt-2">
-                    Add new vegetables or manage stock
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case "vegetables":
-        return <VegetableTable />;
-      case "stock":
-        return (
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-              Stock Management
-            </h2>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <p className="text-sm sm:text-base text-gray-600">
-                Monitor and update stock levels.
-              </p>
-            </div>
-          </div>
-        );
-      case "orders":
-        return <OrderTable />;
-      case "offers":
-        return <OfferPanel />;
-      case "AddCity":
-        return <AddCityForm />;
-      case "add-vegetable":
-        return <AddVegetableForm />;
-      case "testimonials":
-        return <AdminTestimonials />;
-      case "coupon_codes":
-        return <CouponManagement />;
-      default:
-        return (
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-              Dashboard
-            </h2>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <p className="text-sm sm:text-base text-gray-600">
-                Select a menu item from the sidebar.
-              </p>
-            </div>
-          </div>
-        );
-    }
+  const handleNavigation = (path) => {
+    navigate(path);
+    setSidebarOpen(false);
   };
+
+  // Dashboard Overview Component
+  const DashboardOverview = () => (
+    <div>
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
+        Dashboard Overview
+      </h2>
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+        <p className="text-sm sm:text-base text-gray-600">
+          Welcome to the Vegbazar Admin Panel. Use the sidebar to navigate
+          to different sections.
+        </p>
+        <div className="mt-4 sm:mt-6 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+          <div className="p-3 sm:p-4 border border-gray-200 rounded-lg">
+            <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
+              Recent Activity
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 mt-2">
+              5 new orders in the last hour
+            </p>
+          </div>
+          <div className="p-3 sm:p-4 border border-gray-200 rounded-lg">
+            <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
+              Quick Actions
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 mt-2">
+              Add new vegetables or manage stock
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -216,10 +182,7 @@ const Dashboard = () => {
                 {navigationItems.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => {
-                      setActiveRoute(item.id);
-                      setSidebarOpen(false);
-                    }}
+                    onClick={() => handleNavigation(item.path)}
                     className={`${
                       activeRoute === item.id
                         ? "bg-green-100 text-green-900"
@@ -248,7 +211,7 @@ const Dashboard = () => {
                 {navigationItems.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => setActiveRoute(item.id)}
+                    onClick={() => handleNavigation(item.path)}
                     className={`${
                       activeRoute === item.id
                         ? "bg-green-100 text-green-900"
@@ -281,7 +244,7 @@ const Dashboard = () => {
               <h1 className="text-lg sm:text-xl font-bold text-gray-900">
                 Vegbazar Admin
               </h1>
-              {activeRoute === "dashboard" && (
+              {(activeRoute === "dashboard" || location.pathname === "/") && (
                 <button
                   type="button"
                   className="p-2 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500"
@@ -299,11 +262,16 @@ const Dashboard = () => {
           <div className="flex h-full">
             {/* Content Area */}
             <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
-              {renderContent()}
+              {/* Show dashboard overview only on root/dashboard route */}
+              {(location.pathname === "/" || location.pathname === "/dashboard") ? (
+                <DashboardOverview />
+              ) : (
+                <Outlet />
+              )}
             </div>
 
             {/* Desktop Right Statistics Panel - Only on Dashboard */}
-            {activeRoute === "dashboard" && (
+            {(activeRoute === "dashboard" || location.pathname === "/") && (
               <div className="hidden xl:block w-80 bg-white shadow-lg overflow-y-auto">
                 <div className="p-6 sticky top-0">
                   <h3 className="text-lg font-semibold text-gray-900 mb-6">
@@ -343,19 +311,19 @@ const Dashboard = () => {
                     </h4>
                     <div className="space-y-2">
                       <button
-                        onClick={() => setActiveRoute("add-vegetable")}
+                        onClick={() => navigate("/add-vegetable")}
                         className="w-full text-left p-3 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors duration-150"
                       >
                         + Add New Vegetable
                       </button>
                       <button
-                        onClick={() => setActiveRoute("offers")}
+                        onClick={() => navigate("/offers")}
                         className="w-full text-left p-3 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-150"
                       >
                         + Create New Offer
                       </button>
                       <button
-                        onClick={() => setActiveRoute("stock")}
+                        onClick={() => navigate("/stock")}
                         className="w-full text-left p-3 text-sm bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors duration-150"
                       >
                         📊 Update Stock Levels
@@ -402,7 +370,7 @@ const Dashboard = () => {
       </div>
 
       {/* Mobile Right Statistics Panel Overlay - Only on Dashboard */}
-      {statsOpen && activeRoute === "dashboard" && (
+      {statsOpen && (activeRoute === "dashboard" || location.pathname === "/") && (
         <div className="xl:hidden fixed inset-0 flex z-50">
           <div
             className="fixed inset-0 bg-gray-600 bg-opacity-75"
@@ -457,7 +425,7 @@ const Dashboard = () => {
                 <div className="space-y-2">
                   <button
                     onClick={() => {
-                      setActiveRoute("add-vegetable");
+                      navigate("/add-vegetable");
                       setStatsOpen(false);
                     }}
                     className="w-full text-left p-2.5 sm:p-3 text-xs sm:text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors duration-150"
@@ -466,7 +434,7 @@ const Dashboard = () => {
                   </button>
                   <button
                     onClick={() => {
-                      setActiveRoute("offers");
+                      navigate("/offers");
                       setStatsOpen(false);
                     }}
                     className="w-full text-left p-2.5 sm:p-3 text-xs sm:text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-150"
@@ -475,7 +443,7 @@ const Dashboard = () => {
                   </button>
                   <button
                     onClick={() => {
-                      setActiveRoute("stock");
+                      navigate("/stock");
                       setStatsOpen(false);
                     }}
                     className="w-full text-left p-2.5 sm:p-3 text-xs sm:text-sm bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors duration-150"

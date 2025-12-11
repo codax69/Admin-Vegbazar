@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import AddVegetableForm from "./components/AddVegetableForm";
 import StockPanel from "./components/StockPanel";
@@ -13,13 +13,39 @@ import { useLoading } from "./context/LoadingContext";
 import { useAuth } from "./context/AuthContext";
 import AdminTestimonials from "./components/AdminTestimonials";
 import CouponManagement from "./components/CouponManagement";
+import AddCityForm from "./components/AddCityForm";
+import VegetableTable from "./components/VegetableTable";
+import VegetableOrdersReport from "./components/VegetableOrdersReport";
+
+// Create a wrapper component for public routes
+const PublicRoute = ({ children }) => {
+  const { isLoggedIn } = useAuth();
+  
+  if (isLoggedIn) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
+};
 
 function App() {
-  const Navigate = useNavigate();
-  const { setIsLoggedIn, token } = useAuth(); 
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { setIsLoggedIn, token, isLoggedIn } = useAuth(); 
   const { startLoading, stopLoading } = useLoading();
 
   const getUser = async () => {
+    // Skip auth check on public routes
+    if (location.pathname === "/login" || location.pathname === "/register") {
+      return;
+    }
+
+    // Only check if token exists
+    if (!token) {
+      setIsLoggedIn(false);
+      return;
+    }
+
     startLoading();
     try {
       const response = await axios.get(
@@ -31,12 +57,16 @@ function App() {
         }
       );
       if (response.data.success) {
-        Navigate("/");
+        setIsLoggedIn(true);
+        // REMOVED: navigate("/") - This was causing the redirect on refresh
       }
-      setIsLoggedIn(true);
     } catch (error) {
       console.log(`❌ Please Login First >> ${error.message}`);
       setIsLoggedIn(false);
+      // Only redirect to login if on a protected route
+      if (location.pathname !== "/login" && location.pathname !== "/register") {
+        navigate("/login");
+      }
     } finally {
       stopLoading();
     }
@@ -44,25 +74,35 @@ function App() {
 
   useEffect(() => {
     getUser();
-  }, []);
+  }, []); // Empty dependency array - only runs once on mount
 
   return (
     <Routes>
-      {/* Public routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<AdminRegisterPage />} />
+      {/* Public routes with redirect if logged in */}
+      <Route path="/login" element={
+        <PublicRoute>
+          <Login />
+        </PublicRoute>
+      } />
+      <Route path="/register" element={
+        <PublicRoute>
+          <AdminRegisterPage />
+        </PublicRoute>
+      } />
 
       {/* Protected Dashboard routes */}
       <Route element={<PrivateRoute />}>
         <Route path="/" element={<Dashboard />}>
-          {/* Redirect from root to orders page */}
-          <Route index element={<Navigate to="/orders" replace />} />
-          <Route path="/orders" element={<OrderTable />} />
-          <Route path="/add-vegetable" element={<AddVegetableForm />} />
-          <Route path="/stock" element={<StockPanel />} />
-          <Route path="/offers" element={<OfferPanel />} />
-          <Route path="/testimonials" element={<AdminTestimonials />} />
-          <Route path="/coupon_codes" element={<CouponManagement/>}/>
+          <Route index element={<Navigate to="/" replace />} />
+          <Route path="orders" element={<OrderTable />} />
+          <Route path="add-vegetable" element={<AddVegetableForm />} />
+          <Route path="stock" element={<StockPanel />} />
+          <Route path="offers" element={<OfferPanel />} />
+          <Route path="testimonials" element={<AdminTestimonials />} />
+          <Route path="coupon_codes" element={<CouponManagement />} />
+          <Route path="add-city" element={<AddCityForm />} />
+          <Route path="vegetables" element={<VegetableTable />} />
+          <Route path="orderReport" element={<VegetableOrdersReport/>}/>
         </Route>
       </Route>
     </Routes>

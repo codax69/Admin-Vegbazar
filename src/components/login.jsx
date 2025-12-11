@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
@@ -15,10 +15,20 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { setIsLoggedIn } = useAuth();
+  const { setIsLoggedIn, isLoggedIn } = useAuth(); // Added isLoggedIn
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate("/", { replace: true });
+    }
+  }, [isLoggedIn, navigate]);
+
   const handleRegister = () => {
     navigate("/register");
   };
+
+  // ... rest of your code remains exactly the same ...
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -26,7 +36,6 @@ const Login = () => {
       [name]: value,
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -62,17 +71,13 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate form first
     const formErrors = validateForm();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
     }
 
-    // Clear previous errors
     setErrors({});
-
-    // Call login API
     await LoginApiCall();
   };
 
@@ -86,21 +91,18 @@ const Login = () => {
       );
       setIsLoggedIn(true);
       startLoading();
-      // Store authentication data
+      
       if (response.data.accessToken) {
         localStorage.setItem("token", response.data.accessToken);
         localStorage.setItem("user", JSON.stringify(response.data.user));
         localStorage.setItem("userRole", response.data.user?.role || "user");
       }
 
-      // Redirect to dashboard
       navigate("/");
     } catch (error) {
       console.error("Login error:", error);
 
-      // Handle different types of errors
       if (error.response) {
-        // Server responded with error status
         const status = error.response.status;
         const message =
           error.response.data?.message || error.response.data?.error;
@@ -115,7 +117,6 @@ const Login = () => {
             setErrors({ submit: "Invalid username or password." });
             break;
           case 422:
-            // Handle validation errors from server
             if (error.response.data.errors) {
               setErrors(error.response.data.errors);
             } else {
@@ -134,10 +135,8 @@ const Login = () => {
             setErrors({ submit: message || "Login failed. Please try again." });
         }
       } else if (error.request) {
-        // Network error
         setErrors({ submit: "Network error. Please check your connection." });
       } else {
-        // Other errors
         setErrors({
           submit: "An unexpected error occurred. Please try again.",
         });
