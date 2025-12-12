@@ -24,9 +24,9 @@ const Login = () => {
     }
   }, [isLoggedIn, navigate]);
 
-  const handleRegister = () => {
-    navigate("/register");
-  };
+  // const handleRegister = () => {
+  //   navigate("/register");
+  // };
 
   // ... rest of your code remains exactly the same ...
   const handleChange = (e) => {
@@ -417,13 +417,13 @@ const Login = () => {
               >
                 Forgot Password?
               </button>
-              <button
+              {/* <button
                 onClick={handleRegister}
                 type="button"
                 className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
               >
                 Create Account
-              </button>
+              </button> */}
             </div>
           </form>
         </div>

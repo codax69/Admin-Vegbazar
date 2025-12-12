@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
-import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import AddVegetableForm from "./components/AddVegetableForm";
 import StockPanel from "./components/StockPanel";
@@ -20,18 +26,18 @@ import VegetableOrdersReport from "./components/VegetableOrdersReport";
 // Create a wrapper component for public routes
 const PublicRoute = ({ children }) => {
   const { isLoggedIn } = useAuth();
-  
+
   if (isLoggedIn) {
     return <Navigate to="/" replace />;
   }
-  
+
   return children;
 };
 
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setIsLoggedIn, token, isLoggedIn } = useAuth(); 
+  const { setIsLoggedIn, token, isLoggedIn } = useAuth();
   const { startLoading, stopLoading } = useLoading();
 
   const getUser = async () => {
@@ -79,16 +85,14 @@ function App() {
   return (
     <Routes>
       {/* Public routes with redirect if logged in */}
-      <Route path="/login" element={
-        <PublicRoute>
-          <Login />
-        </PublicRoute>
-      } />
-      <Route path="/register" element={
-        <PublicRoute>
-          <AdminRegisterPage />
-        </PublicRoute>
-      } />
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
 
       {/* Protected Dashboard routes */}
       <Route element={<PrivateRoute />}>
@@ -102,7 +106,7 @@ function App() {
           <Route path="coupon_codes" element={<CouponManagement />} />
           <Route path="add-city" element={<AddCityForm />} />
           <Route path="vegetables" element={<VegetableTable />} />
-          <Route path="orderReport" element={<VegetableOrdersReport/>}/>
+          <Route path="orderReport" element={<VegetableOrdersReport />} />
         </Route>
       </Route>
     </Routes>
