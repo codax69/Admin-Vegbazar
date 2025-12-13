@@ -9,6 +9,7 @@ import {
   X,
   Check,
 } from "lucide-react";
+import axios from "axios";
 
 export default function VegetableOrdersReport() {
   const [startDate, setStartDate] = useState("");
@@ -18,13 +19,42 @@ export default function VegetableOrdersReport() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
-  const [selectedVegetables, setSelectedVegetables] = useState([]);
+  const [selectedVegetables, setSelectedVegetables] = useState(() => {
+    const saved = localStorage.getItem('selectedVegetables');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [selectAll, setSelectAll] = useState(false);
+
+  // Load saved search parameters on mount
+  React.useEffect(() => {
+    const savedStartDate = localStorage.getItem('startDate');
+    const savedStartTime = localStorage.getItem('startTime');
+    const savedEndDate = localStorage.getItem('endDate');
+    const savedEndTime = localStorage.getItem('endTime');
+    
+    if (savedStartDate) setStartDate(savedStartDate);
+    if (savedStartTime) setStartTime(savedStartTime);
+    if (savedEndDate) setEndDate(savedEndDate);
+    if (savedEndTime) setEndTime(savedEndTime);
+  }, []);
+
+  // Save selected vegetables to localStorage whenever it changes
+  React.useEffect(() => {
+    localStorage.setItem('selectedVegetables', JSON.stringify(selectedVegetables));
+  }, [selectedVegetables]);
+
+  // Save search parameters to localStorage
+  React.useEffect(() => {
+    if (startDate) localStorage.setItem('startDate', startDate);
+    if (startTime) localStorage.setItem('startTime', startTime);
+    if (endDate) localStorage.setItem('endDate', endDate);
+    if (endTime) localStorage.setItem('endTime', endTime);
+  }, [startDate, startTime, endDate, endTime]);
 
   // Update selectAll checkbox based on current selection
   React.useEffect(() => {
-    if (data?.vegetableWeights) {
-      const allVegetables = Object.keys(data.vegetableWeights);
+    if (data?.vegetableData) {
+      const allVegetables = Object.keys(data.vegetableData);
       setSelectAll(
         allVegetables.length > 0 && 
         selectedVegetables.length === allVegetables.length &&
@@ -43,27 +73,33 @@ export default function VegetableOrdersReport() {
     setError("");
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_SERVER_URL || ''}/api/orders/date-range?startDate=${startDate}&startTime=${startTime}&endDate=${endDate}&endTime=${endTime}`
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_SERVER_URL}/api/orders/date-range`,
+        {
+          params: {
+            startDate,
+            startTime,
+            endDate,
+            endTime,
+          },
+        }
       );
 
-      const result = await response.json();
-
-      if (result.success) {
-        setData(result.data);
+      if (response.data.success) {
+        setData(response.data.data);
         setError("");
         // Filter out vegetables that no longer exist in new data
-        if (result.data.vegetableWeights) {
-          const newVegetables = Object.keys(result.data.vegetableWeights);
+        if (response.data.data.vegetableData) {
+          const newVegetables = Object.keys(response.data.data.vegetableData);
           setSelectedVegetables(prev => prev.filter(veg => newVegetables.includes(veg)));
         }
       } else {
-        setError(result.message || "Failed to fetch data");
+        setError(response.data.message || "Failed to fetch data");
         setData(null);
       }
     } catch (err) {
-      console.error("Fetch error:", err);
-      setError("Error connecting to server");
+      console.error("Axios error:", err);
+      setError(err.response?.data?.message || "Error connecting to server");
       setData(null);
     } finally {
       setLoading(false);
@@ -73,8 +109,8 @@ export default function VegetableOrdersReport() {
   const handleSelectAll = (e) => {
     const checked = e.target.checked;
     setSelectAll(checked);
-    if (checked && data?.vegetableWeights) {
-      setSelectedVegetables(Object.keys(data.vegetableWeights));
+    if (checked && data?.vegetableData) {
+      setSelectedVegetables(Object.keys(data.vegetableData));
     } else {
       setSelectedVegetables([]);
     }
@@ -96,26 +132,32 @@ export default function VegetableOrdersReport() {
   };
 
   const getSelectedStats = () => {
-    if (!data?.vegetableWeights || selectedVegetables.length === 0) return null;
+    if (!data?.vegetableData || selectedVegetables.length === 0) return null;
     
     let totalKg = 0;
     let totalG = 0;
+    let totalPieces = 0;
+    let totalBundles = 0;
+    let totalSets = 0;
     let totalOrders = 0;
 
     selectedVegetables.forEach(vegName => {
-      const veg = data.vegetableWeights[vegName];
+      const veg = data.vegetableData[vegName];
       if (veg) {
         totalKg += veg.totalWeightKg || 0;
         totalG += veg.totalWeightG || 0;
+        totalPieces += veg.totalPieces || 0;
+        totalBundles += veg.totalBundles || 0;
+        totalSets += veg.totalSets || 0;
         totalOrders += veg.orders || 0;
       }
     });
 
-    return { totalKg, totalG, totalOrders };
+    return { totalKg, totalG, totalPieces, totalBundles, totalSets, totalOrders };
   };
 
   const selectedStats = getSelectedStats();
-
+ console.log(data)
   return (
     <div className="min-h-screen bg-gray-50 text-black p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
@@ -249,7 +291,7 @@ export default function VegetableOrdersReport() {
                 <div className="mb-2 sm:mb-0">
                   <p className="text-xs sm:text-sm text-gray-600">Weight</p>
                   <p className="text-xl sm:text-2xl font-bold text-black">
-                    {data.summary.totalVegetablesWeight?.toFixed(2) || 0} kg
+                    {data.summary.totalVegetablesWeightKg?.toFixed(2) || 0} kg
                   </p>
                 </div>
                 <Weight className="w-6 h-6 sm:w-8 sm:h-8 hidden sm:block" style={{ color: "#0e540b" }} />
@@ -274,7 +316,7 @@ export default function VegetableOrdersReport() {
         )}
 
         {/* Vegetable Summary Table - Desktop */}
-        {data && data.vegetableWeights && (
+        {data && data.vegetableData && (
           <>
             {/* Desktop Table */}
             <div className="hidden md:block bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm">
@@ -302,14 +344,26 @@ export default function VegetableOrdersReport() {
               {selectedStats && (
                 <div className="px-6 py-4 bg-green-50 border-b border-gray-200">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Selected Items Total:</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-6 gap-3 text-sm">
                     <div>
                       <span className="text-gray-600">Weight: </span>
-                      <span className="font-semibold text-black">{selectedStats.totalKg.toFixed(2)} kg</span>
+                      <span className="font-semibold text-black">{selectedStats.totalKg} kg</span>
                     </div>
                     <div>
                       <span className="text-gray-600">Weight: </span>
                       <span className="font-semibold text-black">{selectedStats.totalG} g</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Pieces: </span>
+                      <span className="font-semibold text-black">{selectedStats.totalPieces}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Bundles: </span>
+                      <span className="font-semibold text-black">{selectedStats.totalBundles}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Sets: </span>
+                      <span className="font-semibold text-black">{selectedStats.totalSets}</span>
                     </div>
                     <div>
                       <span className="text-gray-600">Orders: </span>
@@ -341,12 +395,21 @@ export default function VegetableOrdersReport() {
                         Weight (g)
                       </th>
                       <th className="px-6 py-3 text-left text-sm font-semibold text-white">
+                        Pieces
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-white">
+                        Bundles
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-white">
+                        Sets
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-white">
                         Orders
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {Object.entries(data.vegetableWeights).map(
+                    {Object.entries(data.vegetableData).map(
                       ([vegetableName, details], index) => (
                         <tr
                           key={vegetableName}
@@ -374,6 +437,15 @@ export default function VegetableOrdersReport() {
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-700">
                             {details.totalWeightG > 0 ? `${details.totalWeightG} g` : '-'}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {details.totalPieces > 0 ? details.totalPieces : '-'}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {details.totalBundles > 0 ? details.totalBundles : '-'}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-700">
+                            {details.totalSets > 0 ? details.totalSets : '-'}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-700">
                             {details.orders}
@@ -414,7 +486,7 @@ export default function VegetableOrdersReport() {
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div>
                         <span className="text-gray-600">Kg: </span>
-                        <span className="font-semibold">{selectedStats.totalKg.toFixed(2)}</span>
+                        <span className="font-semibold">{selectedStats.totalKg}</span>
                       </div>
                       <div>
                         <span className="text-gray-600">Orders: </span>
@@ -435,7 +507,7 @@ export default function VegetableOrdersReport() {
                 </div>
               </div>
 
-              {Object.entries(data.vegetableWeights).map(([vegetableName, details]) => (
+              {Object.entries(data.vegetableData).map(([vegetableName, details]) => (
                 <div
                   key={vegetableName}
                   className={`rounded-lg p-4 border-l-4 shadow-sm ${
@@ -463,10 +535,16 @@ export default function VegetableOrdersReport() {
                               <span className="text-gray-600">{details.totalWeightKg} kg</span>
                             </div>
                           )}
-                          {details.totalWeightG > 0 && (
-                            <div className="flex items-center gap-1">
-                              <Weight className="w-3 h-3 text-gray-500" />
-                              <span className="text-gray-600">{details.totalWeightG} g</span>
+                          {details.totalPieces > 0 && (
+                            <div>
+                              <span className="text-gray-600">Pieces: </span>
+                              <span className="font-medium text-black">{details.totalPieces}</span>
+                            </div>
+                          )}
+                          {details.totalBundles > 0 && (
+                            <div>
+                              <span className="text-gray-600">Bundles: </span>
+                              <span className="font-medium text-black">{details.totalBundles}</span>
                             </div>
                           )}
                           <div className="flex items-center gap-1">
@@ -484,7 +562,7 @@ export default function VegetableOrdersReport() {
         )}
 
         {/* Empty State */}
-        {data && Object.keys(data.vegetableWeights || {}).length === 0 && (
+        {data && Object.keys(data.vegetableData || {}).length === 0 && (
           <div className="bg-white rounded-lg p-8 sm:p-12 text-center border border-gray-200">
             <Package className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-gray-400" />
             <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-1 sm:mb-2">
