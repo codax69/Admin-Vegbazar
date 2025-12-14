@@ -99,36 +99,42 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  // Derived statistics with real data
+  // ✅ Filter out cancelled orders for all calculations
+  const activeOrders = orders.filter(
+    (order) => order.orderStatus !== "cancelled" && order.orderStatus !== "canceled"
+  );
+
+  // Derived statistics with real data (excluding cancelled orders)
   const totalStockItems = vegetables.length;
   const activeOffers = offers.length;
   const lowStockItems = vegetables.filter((v) => v.stockKg <= 2).length;
 
-  const todayOrders = orders.filter((o) => {
+  const todayOrders = activeOrders.filter((o) => {
     const today = new Date().toISOString().split("T")[0];
     return o.orderDate?.startsWith(today);
   }).length;
 
-  const totalOrders = orders.length;
+  const totalOrders = activeOrders.length;
 
-  const todayRevenue = orders
+  const todayRevenue = activeOrders
     .filter((o) => {
       const today = new Date().toISOString().split("T")[0];
       return o.orderDate?.startsWith(today);
     })
     .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
-  const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+  const totalRevenue = activeOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
-  // Calculate yesterday's stats for comparison
+  // Calculate yesterday's stats for comparison (excluding cancelled orders)
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split("T")[0];
 
-  const yesterdayOrders = orders.filter((o) =>
+  const yesterdayOrders = activeOrders.filter((o) =>
     o.orderDate?.startsWith(yesterdayStr)
   ).length;
-  const yesterdayRevenue = orders
+  
+  const yesterdayRevenue = activeOrders
     .filter((o) => o.orderDate?.startsWith(yesterdayStr))
     .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
@@ -139,16 +145,14 @@ const Dashboard = () => {
 
   const revenueTrend =
     yesterdayRevenue > 0
-      ? (((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100).toFixed(
-          1
-        )
+      ? (((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100).toFixed(1)
       : 0;
 
-  // Recent activities with real data
+  // Recent activities with real data (excluding cancelled orders)
   const recentActivities = [
-    ...orders.slice(0, 2).map((order) => ({
+    ...activeOrders.slice(0, 2).map((order) => ({
       type: "order",
-      message: `New order #${order.orderId} - ${order.customerName}`,
+      message: `New order #${order.orderId} - ${order.customerName || order.customerInfo?.name || "Customer"}`,
       time: new Date(order.orderDate).toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
