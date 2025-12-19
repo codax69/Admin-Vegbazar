@@ -157,12 +157,6 @@ const VegetableTable = () => {
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                     VegBazar Price
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                    Offer
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
-                    Screen
-                  </th>
                   <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">
                     Details
                   </th>
@@ -271,16 +265,6 @@ const VegetableTable = () => {
                           isOutOfStock ? "text-gray-400" : "text-green-600"
                         }`}>
                           {displayPrice ? `₹${displayPrice}` : "-"}
-                        </td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                          isOutOfStock ? "text-gray-400" : "text-blue-600"
-                        }`}>
-                          {veg.offer || "-"}
-                        </td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                          isOutOfStock ? "text-gray-400" : "text-gray-700"
-                        }`}>
-                          {veg.screenNumber || "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <button
