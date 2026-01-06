@@ -22,6 +22,7 @@ import CouponManagement from "./components/CouponManagement";
 import AddCityForm from "./components/AddCityForm";
 import VegetableTable from "./components/VegetableTable";
 import VegetableOrdersReport from "./components/VegetableOrdersReport";
+import OrderReportDash from "./components/OrderReportDash";
 
 // Create a wrapper component for public routes
 const PublicRoute = ({ children }) => {
@@ -107,6 +108,7 @@ function App() {
           <Route path="add-city" element={<AddCityForm />} />
           <Route path="vegetables" element={<VegetableTable />} />
           <Route path="orderReport" element={<VegetableOrdersReport />} />
+          <Route path="order-report-dash" element={<OrderReportDash />} />
         </Route>
       </Route>
     </Routes>
