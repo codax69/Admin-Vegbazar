@@ -74,6 +74,11 @@ const Dashboard = () => {
       name: "Order Report",
       icon: FileBarChart,
       path: "/orderReport",
+    },{
+      id: "OrderReportDash",
+      name: "Order Report Dashboard",
+      icon: FileBarChart,
+      path: "/order-report-dash",
     },
   ];
 
