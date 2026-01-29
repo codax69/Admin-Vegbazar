@@ -496,8 +496,7 @@ const OrderTable = () => {
       </div>
     );
   };
-  // Part 3/4 - OrderTable.jsx (Main Layout, Header, Stats, Filters, Card Grid)
-
+  
   // Main Return - Layout, Header, Stats, Filters
   return (
     <div className="min-h-screen bg-gray-50">
@@ -647,7 +646,7 @@ const OrderTable = () => {
             </div>
           )}
         </div>
-        // Part 4/4 - OrderTable.jsx (Order Details Modal - Complete)
+        
 
         {/* Modern Order Detail Modal */}
         {selectedOrder && (
