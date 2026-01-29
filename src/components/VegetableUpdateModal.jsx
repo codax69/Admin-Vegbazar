@@ -7,11 +7,11 @@ const ROUND2 = (n) => Number(Number(n || 0).toFixed(2));
 const calcBlock = (p, factors) =>
   p > 0
     ? {
-        weight1kg: ROUND2(p),
-        weight500g: ROUND2(p * factors.w500),
-        weight250g: ROUND2(p * factors.w250),
-        weight100g: ROUND2(p * factors.w100),
-      }
+      weight1kg: ROUND2(p),
+      weight500g: ROUND2(p * factors.w500),
+      weight250g: ROUND2(p * factors.w250),
+      weight100g: ROUND2(p * factors.w100),
+    }
     : null;
 
 const vegFactors = { w500: 0.58, w250: 0.36, w100: 0.16 };
@@ -68,12 +68,12 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
         sets:
           vegetable.setPricing?.sets?.length > 0
             ? vegetable.setPricing.sets.map((s) => ({
-                quantity: s.quantity ?? "",
-                unit: s.unit ?? "pieces",
-                price: s.price ?? "",
-                marketPrice: s.marketPrice ?? "",
-                label: s.label ?? "",
-              }))
+              quantity: s.quantity ?? "",
+              unit: s.unit ?? "pieces",
+              price: s.price ?? "",
+              marketPrice: s.marketPrice ?? "",
+              label: s.label ?? "",
+            }))
             : [{ quantity: "", unit: "pieces", price: "", marketPrice: "", label: "" }],
       });
     } else {
@@ -105,10 +105,10 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
     const savings =
       vPrice > 0 && mPrice > 0
         ? {
-            amount: ROUND2(mPrice - vPrice),
-            percentage: Number((((mPrice - vPrice) / mPrice) * 100).toFixed(1)),
-            ratio: Number((mPrice / vPrice).toFixed(2)),
-          }
+          amount: ROUND2(mPrice - vPrice),
+          percentage: Number((((mPrice - vPrice) / mPrice) * 100).toFixed(1)),
+          ratio: Number((mPrice / vPrice).toFixed(2)),
+        }
         : null;
 
     return {
@@ -302,19 +302,17 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
 
   if (!vegetable) {
     return (
-      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-          <div className="text-center">
-            <div className="text-red-600 text-5xl mb-4">⚠️</div>
-            <h3 className="text-xl font-bold text-black mb-2">Error</h3>
-            <p className="text-gray-600 mb-6">No vegetable data available to update</p>
-            <button
-              onClick={handleClose}
-              className="px-6 py-2 bg-[#0e540b] text-white rounded-md hover:brightness-90 transition"
-            >
-              Close
-            </button>
-          </div>
+      <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div className="bg-white max-w-sm w-full p-8 text-center shadow-2xl border-t-4 border-[#d43900] rounded-3xl">
+          <div className="text-[#d43900] text-4xl mb-4 font-light">!</div>
+          <h3 className="text-xl font-bold text-black mb-2 uppercase tracking-tight">Data Error</h3>
+          <p className="text-gray-500 mb-8 font-light text-sm">No vegetable data available to update.</p>
+          <button
+            onClick={handleClose}
+            className="w-full py-3 bg-black text-white font-medium hover:bg-gray-800 transition uppercase tracking-widest text-xs rounded-xl"
+          >
+            Close
+          </button>
         </div>
       </div>
     );
@@ -323,286 +321,213 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
   const currentCalculations = pricingType === "weight" ? calculations : setCalculations;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm transition-all duration-300">
+      <div className="bg-white shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto flex flex-col rounded-3xl border-2 border-gray-200">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b bg-black rounded-t-lg">
-          <h2 className="text-2xl font-bold text-white">Update Vegetable</h2>
-          <button onClick={handleClose} className="text-white hover:text-[#0e540b] text-2xl">
-            ×
+        <div className="flex justify-between items-start p-8 border-b border-gray-100 bg-white sticky top-0 z-10">
+          <div>
+            <h2 className="text-3xl font-bold text-black tracking-tight mb-1">Update Product</h2>
+            <div className="flex items-center gap-2 text-xs uppercase tracking-widest font-bold text-[#0e540b]">
+              <span>{vegetable.name}</span>
+              <span className="w-1.5 h-1.5 bg-gray-200 rounded-full"></span>
+              <span className="text-gray-400">Inventory Management</span>
+            </div>
+          </div>
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-white transition-all p-2 hover:bg-black rounded-full"
+          >
+            <span className="text-2xl leading-none block w-6 h-6 text-center">&times;</span>
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6">
+        {/* Form Content */}
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-400 text-red-700 rounded">{error}</div>
+            <div className="p-4 bg-[#d43900]/5 border-l-4 border-[#d43900] text-[#d43900] text-sm font-medium rounded-r-xl">
+              {error}
+            </div>
           )}
 
-          {/* Pricing Type Toggle */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <label className="block text-sm font-medium text-black mb-3">Pricing Type</label>
-            <div className="flex gap-4">
+          {/* Pricing Type Checkbox/Toggle */}
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between p-6 bg-gray-50 rounded-2xl border-2 border-gray-200">
+            <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Pricing Model</span>
+            <div className="flex p-1 bg-white rounded-xl border border-gray-200">
               <button
                 type="button"
                 onClick={() => setPricingType("weight")}
-                className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${
-                  pricingType === "weight"
-                    ? "bg-[#0e540b] text-white"
-                    : "bg-white text-black border border-gray-300 hover:bg-gray-50"
-                }`}
+                className={`px-6 py-2.5 text-xs font-bold uppercase tracking-wider transition-all rounded-lg ${pricingType === "weight"
+                  ? "bg-[#0e540b] text-white shadow-md"
+                  : "text-gray-400 hover:text-black"
+                  }`}
               >
-                ⚖️ Weight-Based (kg)
+                By Weight (KG)
               </button>
               <button
                 type="button"
                 onClick={() => setPricingType("set")}
-                className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${
-                  pricingType === "set"
-                    ? "bg-[#0e540b] text-white"
-                    : "bg-white text-black border border-gray-300 hover:bg-gray-50"
-                }`}
+                className={`px-6 py-2.5 text-xs font-bold uppercase tracking-wider transition-all rounded-lg ${pricingType === "set"
+                  ? "bg-[#0e540b] text-white shadow-md"
+                  : "text-gray-400 hover:text-black"
+                  }`}
               >
-                📦 Set-Based (pieces/bundles)
+                By Set (Units)
               </button>
             </div>
           </div>
 
           {currentCalculations?.isOutOfStock && (
-            <div className="mb-4 p-4 bg-orange-50 border-2 border-orange-400 rounded-lg flex items-center gap-2">
-              <span className="text-2xl">⚠️</span>
-              <div>
-                <p className="font-bold text-orange-800">Out of Stock</p>
-                <p className="text-sm text-orange-700">Not available for purchase</p>
-              </div>
+            <div className="flex items-center gap-3 p-4 bg-[#d43900]/5 border border-[#d43900]/20 text-[#d43900]">
+              <span className="font-bold uppercase text-xs tracking-wider">Out of Stock</span>
+              <span className="w-px h-4 bg-[#d43900]/20"></span>
+              <span className="text-sm">Item is hidden from purchase availability.</span>
             </div>
           )}
 
-          {/* Weight-Based Form */}
+          {/* WEIGHT BASED */}
           {pricingType === "weight" && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {/* Left Column */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-2">Name *</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                      required
-                    />
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              {/* Column 1 */}
+              <div className="space-y-6">
+                <div className="group">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Product Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full bg-white border-2 border-gray-300 focus:border-[#0e540b] px-5 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none"
+                    placeholder="Enter vegetable name"
+                  />
+                </div>
 
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-black mb-2">
-                      VegBazar Price (1kg) ₹ *
-                    </label>
-                    <input
-                      type="number"
-                      name="price1kg"
-                      value={formData.price1kg}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="0.01"
-                      className="w-full px-3 py-2 border border-[#0e540b]/40 bg-[#0e540b]/5 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Other weights calculated automatically</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-2">Market Price (1kg) ₹ *</label>
-                    <input
-                      type="number"
-                      name="marketPrice1kg"
-                      value={formData.marketPrice1kg}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="0.01"
-                      className="w-full px-3 py-2 border border-[#0e540b]/40 bg-[#0e540b]/5 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Other weights calculated automatically</p>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="block text-sm font-medium text-black">Stock (kg) *</label>
-                      <button
-                        type="button"
-                        onClick={markOutOfStock}
-                        className="text-xs px-3 py-1 bg-[#0e540b]/10 text-[#0e540b] rounded-md hover:bg-[#0e540b]/20 transition font-medium"
-                      >
-                        Mark Out of Stock
-                      </button>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Our Price (1kg)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-3.5 text-gray-500">₹</span>
+                      <input
+                        type="number"
+                        name="price1kg"
+                        value={formData.price1kg}
+                        onChange={handleInputChange}
+                        className="w-full bg-white border-2 border-gray-300 focus:border-[#0e540b] pl-8 pr-4 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none"
+                      />
                     </div>
-                    <input
-                      type="number"
-                      name="stockKg"
-                      value={formData.stockKg}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="0.1"
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                        calculations?.isOutOfStock ? "border-red-300 bg-red-50 focus:ring-red-500" : "border-gray-300 focus:ring-[#0e540b]"
-                      }`}
-                      required
-                    />
-                    {calculations?.isOutOfStock && <p className="text-xs text-red-600 mt-1 font-medium">⚠️ Out of Stock</p>}
-                    {calculations?.isLowStock && <p className="text-xs text-orange-600 mt-1 font-medium">⚠️ Low Stock - Only {formData.stockKg}kg</p>}
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-black mb-2">Offer</label>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Market Price</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-3.5 text-gray-500">₹</span>
+                      <input
+                        type="number"
+                        name="marketPrice1kg"
+                        value={formData.marketPrice1kg}
+                        onChange={handleInputChange}
+                        className="w-full bg-white border-2 border-gray-300 focus:border-[#0e540b] pl-8 pr-4 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest">Stock Level (kg)</label>
+                    <button type="button" onClick={markOutOfStock} className="text-[10px] font-bold text-[#d43900] uppercase tracking-wider hover:underline">
+                      Set Out of Stock
+                    </button>
+                  </div>
+                  <input
+                    type="number"
+                    name="stockKg"
+                    value={formData.stockKg}
+                    onChange={handleInputChange}
+                    className={`w-full bg-white border-2 px-5 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none ${calculations?.isOutOfStock
+                      ? "border-[#d43900] text-[#d43900]"
+                      : "border-gray-300 focus:border-[#0e540b]"
+                      }`}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Special Offer</label>
                     <input
                       type="text"
                       name="offer"
                       value={formData.offer}
                       onChange={handleInputChange}
-                      placeholder="e.g., 10% off"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
+                      placeholder="e.g. 10% OFF"
+                      className="w-full bg-white border-2 border-gray-300 focus:border-[#0e540b] px-5 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-black mb-2">Screen Number</label>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Display Order</label>
                     <input
                       type="text"
                       name="screenNumber"
                       value={formData.screenNumber}
                       onChange={handleInputChange}
-                      placeholder="e.g., 1-5"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                    />
-                  </div>
-                </div>
-
-                {/* Right Column */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-2">Image URL</label>
-                    <input
-                      type="url"
-                      name="image"
-                      value={formData.image}
-                      onChange={handleInputChange}
-                      placeholder="https://example.com/image.jpg"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                    />
-                  </div>
-
-                  {formData.image && (
-                    <div>
-                      <label className="block text-sm font-medium text-black mb-2">Preview</label>
-                      <div className="border border-gray-300 rounded-md p-2">
-                        <img
-                          src={formData.image}
-                          alt="Preview"
-                          className="w-32 h-32 object-cover rounded-md mx-auto"
-                          onError={(e) => {
-                            e.target.src = "/placeholder-vegetable.png";
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-2">Description</label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      rows="5"
-                      placeholder="Brief description..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b] resize-vertical"
+                      placeholder="e.g. 1"
+                      className="w-full bg-white border-2 border-gray-300 focus:border-[#0e540b] px-5 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Savings */}
-              {calculations?.savings && (
-                <div className="mb-6 p-4 bg-[#0e540b]/10 rounded-lg border border-[#0e540b]/20">
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-xs text-black mb-1">Savings</p>
-                      <p className="text-2xl font-bold text-[#0e540b]">₹{calculations.savings.amount}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-black mb-1">Percentage</p>
-                      <p className="text-2xl font-bold text-[#0e540b]">{calculations.savings.percentage}%</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-black mb-1">Ratio</p>
-                      <p className="text-2xl font-bold text-[#0e540b]">{calculations.savings.ratio}x</p>
-                    </div>
-                  </div>
+              {/* Column 2 */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Image URL</label>
+                  <input
+                    type="url"
+                    name="image"
+                    value={formData.image}
+                    onChange={handleInputChange}
+                    className="w-full bg-white border-2 border-gray-300 focus:border-[#0e540b] px-5 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none text-xs"
+                  />
                 </div>
-              )}
 
-              {/* VegBazar Prices */}
-              {calculations?.vegBazarPrices && (
-                <div className="mb-6 p-4 bg-[#0e540b]/5 rounded-lg border border-[#0e540b]/20">
-                  <h3 className="text-sm font-semibold text-[#0e540b] mb-3">📊 VegBazar Prices</h3>
-                  <div className="grid grid-cols-4 gap-2 text-center">
-                    {Object.entries(calculations.vegBazarPrices).map(([key, val]) => (
-                      <div key={key}>
-                        <p className="text-xs text-gray-600">{key.replace("weight", "")}</p>
-                        <p className="text-lg font-bold text-[#0e540b]">₹{val}</p>
-                      </div>
-                    ))}
+                {formData.image && (
+                  <div className="h-40 w-full bg-gray-50 rounded-2xl overflow-hidden flex items-center justify-center border-2 border-gray-200 shadow-inner">
+                    <img src={formData.image} alt="Preview" className="h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Market Prices */}
-              {calculations?.marketPrices && (
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <h3 className="text-sm font-semibold text-black mb-3">🏪 Market Prices</h3>
-                  <div className="grid grid-cols-4 gap-2 text-center">
-                    {Object.entries(calculations.marketPrices).map(([key, val]) => (
-                      <div key={key}>
-                        <p className="text-xs text-gray-600">{key.replace("weight", "")}</p>
-                        <p className="text-lg font-bold text-black">₹{val}</p>
-                      </div>
-                    ))}
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Description</label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    rows="3"
+                    className="w-full bg-white border-2 border-gray-300 focus:border-[#0e540b] px-5 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none resize-none"
+                  />
                 </div>
-              )}
-            </>
+              </div>
+            </div>
           )}
 
-          {/* Set-Based Form */}
+          {/* SET BASED */}
           {pricingType === "set" && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Column */}
-                <div className="space-y-4">
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-black mb-2">Name *</label>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Product Name</label>
                     <input
                       type="text"
                       name="name"
                       value={setsForm.name}
                       onChange={handleSetInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                      required
+                      className="w-full bg-white border-2 border-gray-300 focus:border-[#0e540b] px-5 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none"
                     />
                   </div>
-
                   <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="block text-sm font-medium text-black">Stock (Pieces) *</label>
-                      <button
-                        type="button"
-                        onClick={markOutOfStock}
-                        className="text-xs px-3 py-1 bg-[#0e540b]/10 text-[#0e540b] rounded-md hover:bg-[#0e540b]/20 transition font-medium"
-                      >
-                        Mark Out of Stock
+                    <div className="flex justify-between mb-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest">Total Stock (Pieces)</label>
+                      <button type="button" onClick={markOutOfStock} className="text-[10px] font-bold text-[#d43900] uppercase tracking-wider hover:underline">
+                        Set Out of Stock
                       </button>
                     </div>
                     <input
@@ -610,136 +535,98 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
                       name="stockPieces"
                       value={setsForm.stockPieces}
                       onChange={handleSetInputChange}
-                      min="0"
-                      step="1"
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                        setCalculations?.isOutOfStock ? "border-red-300 bg-red-50 focus:ring-red-500" : "border-gray-300 focus:ring-[#0e540b]"
-                      }`}
-                      required
-                    />
-                    {setCalculations?.isOutOfStock && <p className="text-xs text-red-600 mt-1 font-medium">⚠️ Out of Stock</p>}
-                    {setCalculations?.isLowStock && <p className="text-xs text-orange-600 mt-1 font-medium">⚠️ Low Stock - Only {setsForm.stockPieces} pieces</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-2">Offer</label>
-                    <input
-                      type="text"
-                      name="offer"
-                      value={setsForm.offer}
-                      onChange={handleSetInputChange}
-                      placeholder="e.g., Buy 6 get 1 free"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
+                      className={`w-full bg-white border-2 px-5 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none ${setCalculations?.isOutOfStock ? "border-[#d43900] text-[#d43900]" : "border-gray-300 focus:border-[#0e540b]"
+                        }`}
                     />
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-2">Screen Number</label>
-                    <input
-                      type="text"
-                      name="screenNumber"
-                      value={setsForm.screenNumber}
-                      onChange={handleSetInputChange}
-                      placeholder="e.g., 1-5"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Offer</label>
+                      <input
+                        type="text"
+                        name="offer"
+                        value={setsForm.offer}
+                        onChange={handleSetInputChange}
+                        placeholder="e.g. Buy 1 Get 1"
+                        className="w-full bg-white border-2 border-gray-300 focus:border-[#0e540b] px-5 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Display Order</label>
+                      <input
+                        type="text"
+                        name="screenNumber"
+                        value={setsForm.screenNumber}
+                        onChange={handleSetInputChange}
+                        placeholder="e.g. 1"
+                        className="w-full bg-white border-2 border-gray-300 focus:border-[#0e540b] px-5 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none"
+                      />
+                    </div>
                   </div>
                 </div>
-
-                {/* Right Column */}
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-black mb-2">Image URL</label>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Description</label>
+                    <textarea
+                      name="description"
+                      value={setsForm.description}
+                      onChange={handleSetInputChange}
+                      rows="3"
+                      className="w-full bg-white border-2 border-gray-300 focus:border-[#0e540b] px-5 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Image URL</label>
                     <input
                       type="url"
                       name="image"
                       value={setsForm.image}
                       onChange={handleSetInputChange}
-                      placeholder="https://example.com/image.jpg"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                    />
-                  </div>
-
-                  {setsForm.image && (
-                    <div>
-                      <label className="block text-sm font-medium text-black mb-2">Preview</label>
-                      <div className="border border-gray-300 rounded-md p-2">
-                        <img
-                          src={setsForm.image}
-                          alt="Preview"
-                          className="w-32 h-32 object-cover rounded-md mx-auto"
-                          onError={(e) => {
-                            e.target.src = "/placeholder-vegetable.png";
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-2">Description</label>
-                    <textarea
-                      name="description"
-                      value={setsForm.description}
-                      onChange={handleSetInputChange}
-                      rows="4"
-                      placeholder="Brief description..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0e540b] resize-vertical"
+                      className="w-full bg-white border-2 border-gray-300 focus:border-[#0e540b] px-5 py-3.5 text-black font-medium transition-all rounded-xl focus:shadow-md focus:outline-none text-xs"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Set Items */}
-              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              {/* Set Items Builder */}
+              <div>
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-semibold text-black">📦 Set Pricing Options</h3>
+                  <h4 className="text-sm font-bold uppercase tracking-widest text-[#0e540b]">Set Configurations</h4>
                   <button
                     type="button"
                     onClick={addSetItem}
-                    className="px-3 py-1 bg-[#0e540b] text-white text-sm rounded-md hover:brightness-90 transition"
+                    className="text-xs bg-black text-white px-4 py-2 uppercase tracking-widest font-bold hover:bg-gray-800 transition"
                   >
-                    + Add Set
+                    + Add Variation
                   </button>
                 </div>
-
                 <div className="space-y-4">
                   {setsForm.sets.map((s, index) => (
-                    <div key={index} className="p-4 bg-white rounded-lg border border-gray-300">
-                      <div className="flex justify-between items-center mb-3">
-                        <h4 className="text-sm font-medium text-black">Set {index + 1}</h4>
-                        {setsForm.sets.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeSetItem(index)}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
+                    <div key={index} className="bg-gray-50 p-6 border border-gray-200 relative group">
+                      <button
+                        type="button"
+                        onClick={() => removeSetItem(index)}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-[#d43900] transition-colors"
+                        title="Remove Set"
+                      >
+                        &times;
+                      </button>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">Quantity *</label>
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Qty</label>
                           <input
                             type="number"
                             value={s.quantity}
                             onChange={(e) => handleSetItemChange(index, "quantity", e.target.value)}
-                            min="1"
-                            step="1"
-                            placeholder="e.g., 6"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                            required
+                            className="w-full bg-white border border-gray-200 p-2 text-sm focus:border-[#0e540b] focus:outline-none"
                           />
                         </div>
-
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">Unit *</label>
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Unit</label>
                           <select
                             value={s.unit}
                             onChange={(e) => handleSetItemChange(index, "unit", e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
+                            className="w-full bg-white border border-gray-200 p-2 text-sm focus:border-[#0e540b] focus:outline-none"
                           >
                             <option value="pieces">Pieces</option>
                             <option value="bundles">Bundles</option>
@@ -747,60 +634,25 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
                             <option value="nos">Nos</option>
                           </select>
                         </div>
-
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">Price ₹ *</label>
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Our Price</label>
                           <input
                             type="number"
                             value={s.price}
                             onChange={(e) => handleSetItemChange(index, "price", e.target.value)}
-                            min="0"
-                            step="0.01"
-                            placeholder="e.g., 10"
-                            className="w-full px-3 py-2 border border-[#0e540b]/40 bg-[#0e540b]/5 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                            required
+                            className="w-full bg-white border border-gray-200 p-2 text-sm focus:border-[#0e540b] focus:outline-none font-bold text-[#0e540b]"
                           />
                         </div>
-
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">Market Price ₹</label>
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Market Price</label>
                           <input
                             type="number"
                             value={s.marketPrice}
                             onChange={(e) => handleSetItemChange(index, "marketPrice", e.target.value)}
-                            min="0"
-                            step="0.01"
-                            placeholder="e.g., 15"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
+                            className="w-full bg-white border border-gray-200 p-2 text-sm focus:border-[#0e540b] focus:outline-none"
                           />
-                        </div>
-
-                        <div className="col-span-2">
-                          <label className="block text-xs font-medium text-gray-700 mb-1">Label (Optional)</label>
-                          <input
-                            type="text"
-                            value={s.label}
-                            onChange={(e) => handleSetItemChange(index, "label", e.target.value)}
-                            placeholder="e.g., 6 Bhaji Bundle"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                          />
-                          <p className="text-xs text-gray-500 mt-1">Auto-generated if empty</p>
                         </div>
                       </div>
-
-                      {/* Set Preview */}
-                      {s.quantity && s.price && (
-                        <div className="mt-3 p-2 bg-[#0e540b]/5 rounded border border-[#0e540b]/20">
-                          <p className="text-sm font-medium text-[#0e540b]">
-                            {s.label || `${s.quantity} ${s.unit}`} - ₹{s.price}
-                            {s.marketPrice && (
-                              <span className="text-gray-600 ml-2">
-                                (Market: ₹{s.marketPrice}, Save: ₹{(Number(s.marketPrice) - Number(s.price)).toFixed(2)})
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -808,21 +660,17 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
             </div>
           )}
 
-          {/* Footer */}
-          <div className="flex justify-end space-x-4 pt-4 border-t">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-6 py-2 border border-gray-300 text-black rounded-md hover:bg-gray-50 transition"
-            >
-              Cancel
+          {/* Actions */}
+          <div className="flex justify-between items-center pt-8 border-t border-gray-100 mt-8">
+            <button className="text-xs uppercase tracking-widest text-gray-400 hover:text-[#d43900] transition-colors font-bold" type="button" onClick={handleClose}>
+              Cancel Update
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#0e540b] text-white rounded-md hover:brightness-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              className="px-8 py-3.5 bg-[#0e540b] text-white font-bold uppercase tracking-widest text-xs hover:bg-[#0b4608] transition shadow-lg hover:shadow-[#0e540b]/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-full"
             >
-              {loading ? "Updating..." : "Update"}
+              {loading ? "Saving Changes..." : "Save Changes"}
             </button>
           </div>
         </form>

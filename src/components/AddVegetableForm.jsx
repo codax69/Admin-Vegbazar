@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useLoading } from "../context/LoadingContext";
 import { useAuth } from "../context/AuthContext";
+import { Leaf, Layers, Scale, Package, Info, UploadCloud, DollarSign } from "lucide-react";
 
 const ROUND2 = (n) => Number(Number(n || 0).toFixed(2));
 
@@ -252,521 +253,313 @@ const AddVegetableForm = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 py-4 px-4 sm:py-6 flex flex-col justify-center">
-      <div className="relative w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-3xl mx-auto">
-        <div className="relative px-4 py-6 sm:px-6 sm:py-10 bg-white shadow-lg rounded-lg sm:rounded-3xl">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-700">
-                Add New Vegetable
-              </h2>
-              <p className="text-sm text-gray-500">
-                Fill details to add a new vegetable
-              </p>
+    <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+
+          {/* Compact Header */}
+          <div className="px-6 py-5 border-b border-gray-100 bg-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#0e540b]/10 rounded-full flex items-center justify-center text-[#0e540b]">
+                <Leaf size={20} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 tracking-tight leading-tight">
+                  Add New Item
+                </h2>
+                <p className="text-xs text-gray-500 font-medium mt-0.5">
+                  Create inventory for your catalog
+                </p>
+              </div>
             </div>
 
-            {/* Mode Toggle */}
-            <div className="flex gap-2">
+            {/* Compact Mode Toggle */}
+            <div className="bg-gray-100 p-1 rounded-lg flex border border-gray-200">
               <button
                 type="button"
                 onClick={() => setMode("weight")}
-                className={`px-3 py-2 rounded-md font-medium transition ${
-                  mode === "weight"
-                    ? "bg-[#0e540b] text-white"
-                    : "bg-white text-black border border-gray-300"
-                }`}
+                className={`px-4 py-1.5 rounded-md text-xs font-bold uppercase tracking-wide transition-all ${mode === "weight"
+                  ? "bg-white text-[#0e540b] shadow-sm"
+                  : "text-gray-500 hover:text-gray-800"
+                  }`}
               >
-                ⚖️ Weight
+                <span className="flex items-center gap-1.5"><Scale size={12} /> By Weight</span>
               </button>
               <button
                 type="button"
                 onClick={() => setMode("set")}
-                className={`px-3 py-2 rounded-md font-medium transition ${
-                  mode === "set"
-                    ? "bg-[#0e540b] text-white"
-                    : "bg-white text-black border border-gray-300"
-                }`}
+                className={`px-4 py-1.5 rounded-md text-xs font-bold uppercase tracking-wide transition-all ${mode === "set"
+                  ? "bg-white text-[#0e540b] shadow-sm"
+                  : "text-gray-500 hover:text-gray-800"
+                  }`}
               >
-                📦 Set / Pieces
+                <span className="flex items-center gap-1.5"><Layers size={12} /> By Set</span>
               </button>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {mode === "weight" ? (
-              <div className="space-y-4">
-                {/* Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Vegetable Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.vegetableName}
-                    onChange={(e) =>
-                      handleInputChange("vegetableName", e.target.value)
-                    }
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                      errors.vegetableName
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-green-500"
-                    }`}
-                    placeholder="e.g., Tomato"
-                    disabled={isLoading}
-                  />
-                  {errors.vegetableName && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.vegetableName}
-                    </p>
-                  )}
-                </div>
+              <div className="space-y-6">
+                {/* Weight Mode Inputs */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">Product Name</label>
+                      <input
+                        type="text"
+                        value={formData.vegetableName}
+                        onChange={(e) => handleInputChange("vegetableName", e.target.value)}
+                        className={`w-full bg-gray-50 border px-3 py-2.5 text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 transition-all ${errors.vegetableName ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-[#0e540b]"}`}
+                        placeholder="e.g. Red Tomato"
+                        disabled={isLoading}
+                      />
+                      {errors.vegetableName && <p className="mt-1 text-[10px] font-medium text-red-600 flex items-center gap-1"><span>!</span>{errors.vegetableName}</p>}
+                    </div>
 
-                {/* Stock */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Stock (kg) *
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.stock}
-                    onChange={(e) => handleInputChange("stock", e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                      errors.stock
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-green-500"
-                    }`}
-                    placeholder="Enter stock"
-                    disabled={isLoading}
-                  />
-                  {errors.stock && (
-                    <p className="mt-1 text-sm text-red-600">{errors.stock}</p>
-                  )}
-                </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">Stock Details (KG)</label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={formData.stock}
+                          onChange={(e) => handleInputChange("stock", e.target.value)}
+                          className={`w-full bg-gray-50 border px-3 py-2.5 pl-3 text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 transition-all ${errors.stock ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-[#0e540b]"}`}
+                          placeholder="0.00"
+                          disabled={isLoading}
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-xs text-gray-400 font-bold">KG</div>
+                      </div>
+                      {errors.stock && <p className="mt-1 text-[10px] font-medium text-red-600 flex items-center gap-1"><span>!</span>{errors.stock}</p>}
+                    </div>
 
-                {/* Price row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      VegBazar Price (1kg) ₹ *
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.price1kg}
-                      onChange={(e) =>
-                        handleInputChange("price1kg", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-blue-300 bg-blue-50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter VegBazar price"
-                      disabled={isLoading}
-                    />
-                    {errors.price1kg && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.price1kg}
-                      </p>
-                    )}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">VegBazar Price</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">₹</span>
+                          <input
+                            type="number"
+                            value={formData.price1kg}
+                            onChange={(e) => handleInputChange("price1kg", e.target.value)}
+                            className={`w-full pl-7 pr-3 py-2.5 bg-gray-50 border rounded-lg text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 transition-all ${errors.price1kg ? "border-red-500" : "border-gray-200 focus:border-[#0e540b]"}`}
+                            placeholder="0"
+                          />
+                        </div>
+                        {errors.price1kg && <p className="mt-1 text-[10px] font-medium text-red-600">{errors.price1kg}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">Market Price</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">₹</span>
+                          <input
+                            type="number"
+                            value={formData.marketPrice1kg}
+                            onChange={(e) => handleInputChange("marketPrice1kg", e.target.value)}
+                            className={`w-full pl-7 pr-3 py-2.5 bg-gray-50 border rounded-lg text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 transition-all ${errors.marketPrice1kg ? "border-red-500" : "border-gray-200 focus:border-[#0e540b]"}`}
+                            placeholder="0"
+                          />
+                        </div>
+                        {errors.marketPrice1kg && <p className="mt-1 text-[10px] font-medium text-red-600">{errors.marketPrice1kg}</p>}
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Market Price (1kg) ₹ *
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.marketPrice1kg}
-                      onChange={(e) =>
-                        handleInputChange("marketPrice1kg", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-green-300 bg-green-50 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="Enter Market price"
-                      disabled={isLoading}
-                    />
-                    {errors.marketPrice1kg && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.marketPrice1kg}
-                      </p>
-                    )}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">Description</label>
+                      <textarea
+                        value={formData.description}
+                        onChange={(e) => handleInputChange("description", e.target.value)}
+                        rows="4"
+                        className="w-full bg-gray-50 border border-gray-200 px-3 py-2.5 text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 focus:border-[#0e540b] transition-all resize-none placeholder-gray-400"
+                        placeholder="Describe the product..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">Product Image</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={formData.image}
+                          onChange={(e) => handleInputChange("image", e.target.value)}
+                          className={`flex-1 bg-gray-50 border px-3 py-2.5 text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 transition-all ${errors.image ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-[#0e540b]"}`}
+                          placeholder="https://example.com/image.jpg"
+                        />
+                        <div className="w-10 flex items-center justify-center bg-gray-100 rounded-lg border border-gray-200 text-gray-400">
+                          <UploadCloud size={16} />
+                        </div>
+                      </div>
+                      {errors.image && <p className="mt-1 text-[10px] font-medium text-red-600">{errors.image}</p>}
+
+                      {formData.image && (
+                        <div className="mt-3 h-32 w-full bg-gray-50 rounded-xl border border-dashed border-gray-300 flex items-center justify-center overflow-hidden relative group">
+                          <img src={formData.image} alt="Preview" className="h-full w-full object-contain p-2" onError={(e) => e.target.style.display = 'none'} />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Image */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image URL *
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.image}
-                    onChange={(e) => handleInputChange("image", e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                      errors.image
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-green-500"
-                    }`}
-                    placeholder="https://example.com/image.jpg"
-                    disabled={isLoading}
-                  />
-                  {errors.image && (
-                    <p className="mt-1 text-sm text-red-600">{errors.image}</p>
-                  )}
-                </div>
-
-                {/* Offer, screen, description */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Additional Details */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Category/Screen
-                    </label>
-                    <select
-                      value={formData.screen}
-                      onChange={(e) =>
-                        handleInputChange("screen", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                      <option value="1">Category 1 - Fresh Vegetables</option>
-                      <option value="2">Category 2 - Leafy Greens</option>
-                      <option value="3">Category 3 - Root Vegetables</option>
-                      <option value="4">Category 4 - Exotic Vegetables</option>
-                      <option value="5">
-                        Category 5 - Seasonal Vegetables
-                      </option>
-                    </select>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">Category</label>
+                    <div className="relative">
+                      <select
+                        value={formData.screen}
+                        onChange={(e) => handleInputChange("screen", e.target.value)}
+                        className="w-full appearance-none bg-gray-50 border border-gray-200 px-3 py-2.5 text-gray-900 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 focus:border-[#0e540b] transition-all"
+                      >
+                        <option value="1">Fresh Vegetables</option>
+                        <option value="2">Leafy Greens</option>
+                        <option value="3">Root Vegetables</option>
+                        <option value="4">Exotic Vegetables</option>
+                        <option value="5">Seasonal Vegetables</option>
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Special Offer
-                    </label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">Active Offer</label>
                     <input
                       type="text"
                       value={formData.offer}
-                      onChange={(e) =>
-                        handleInputChange("offer", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="e.g., 10% off"
-                      disabled={isLoading}
+                      onChange={(e) => handleInputChange("offer", e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 px-3 py-2.5 text-gray-900 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 focus:border-[#0e540b] transition-all"
+                      placeholder="e.g. 15% OFF"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) =>
-                      handleInputChange("description", e.target.value)
-                    }
-                    rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-                    placeholder="Enter description (optional)"
-                    disabled={isLoading}
-                  />
-                </div>
-
-                {/* Previews */}
-                {formData.price1kg && formData.marketPrice1kg && (
-                  <div className="p-4 bg-yellow-50 rounded-lg border-2 border-yellow-300">
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div>
-                        <p className="text-xs text-gray-600 mb-1">
-                          Savings Amount
-                        </p>
-                        <p className="text-2xl font-bold text-yellow-600">
-                          ₹{savings.amount}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600 mb-1">Savings %</p>
-                        <p className="text-2xl font-bold text-yellow-600">
-                          {savings.percentage}%
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600 mb-1">Multiplier</p>
-                        <p className="text-2xl font-bold text-yellow-600">
-                          {(
-                            parseFloat(formData.marketPrice1kg) /
-                            parseFloat(formData.price1kg)
-                          ).toFixed(2)}
-                          x
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {vegBazarPrices && (
-                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <h3 className="text-sm font-semibold text-blue-900 mb-3">
-                      VegBazar Prices (Auto)
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                      <div>
-                        <p className="text-xs text-gray-600">1 kg</p>
-                        <p className="text-lg font-bold text-blue-600">
-                          ₹{vegBazarPrices.weight1kg}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600">500g</p>
-                        <p className="text-lg font-bold text-blue-600">
-                          ₹{vegBazarPrices.weight500g}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600">250g</p>
-                        <p className="text-lg font-bold text-blue-600">
-                          ₹{vegBazarPrices.weight250g}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600">100g</p>
-                        <p className="text-lg font-bold text-blue-600">
-                          ₹{vegBazarPrices.weight100g}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {marketPrices_display && (
-                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <h3 className="text-sm font-semibold text-green-900 mb-3">
-                      Market Prices (Auto)
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                      <div>
-                        <p className="text-xs text-gray-600">1 kg</p>
-                        <p className="text-lg font-bold text-green-600">
-                          ₹{marketPrices_display.weight1kg}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600">500g</p>
-                        <p className="text-lg font-bold text-green-600">
-                          ₹{marketPrices_display.weight500g}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600">250g</p>
-                        <p className="text-lg font-bold text-green-600">
-                          ₹{marketPrices_display.weight250g}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600">100g</p>
-                        <p className="text-lg font-bold text-green-600">
-                          ₹{marketPrices_display.weight100g}
-                        </p>
-                      </div>
+                {/* Price Preview */}
+                {(vegBazarPrices || marketPrices_display) && (
+                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <Info size={12} /> Price Breakdown
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {vegBazarPrices && (
+                        <div className="bg-white p-4 rounded-lg border border-green-100 shadow-sm">
+                          <h5 className="text-[#0e540b] font-bold uppercase text-[10px] mb-3 tracking-wider">VegBazar Pricing</h5>
+                          <div className="grid grid-cols-4 gap-2 text-center">
+                            {Object.entries(vegBazarPrices).map(([key, val]) => (
+                              <div key={key} className="bg-green-50/50 p-2 rounded-md">
+                                <p className="text-[9px] text-gray-500 font-bold uppercase mb-0.5">{key.replace('weight', '')}</p>
+                                <p className="text-sm font-black text-[#0e540b]">₹{val}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {savings?.amount > 0 && (
+                        <div className="flex items-center justify-center p-2">
+                          <div className="text-center">
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Savings</p>
+                            <p className="text-3xl font-black text-[#0e540b] tracking-tight">
+                              {savings.percentage}%
+                            </p>
+                            <p className="text-xs text-green-700 font-semibold mt-1 bg-green-100 px-2 py-0.5 rounded-full inline-block">
+                              Save ₹{savings.amount} /kg
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
               </div>
             ) : (
-              // Set mode UI
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={setsForm.name}
-                    onChange={(e) =>
-                      handleSetInputChange("name", e.target.value)
-                    }
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                      errors.name
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-green-500"
-                    }`}
-                    placeholder="e.g., Bhaji Bundle"
-                    disabled={isLoading}
-                  />
-                  {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                  )}
-                </div>
+              <div className="space-y-6">
+                {/* Set Mode Inputs */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">Set Name</label>
+                      <input
+                        type="text"
+                        value={setsForm.name}
+                        onChange={(e) => handleSetInputChange("name", e.target.value)}
+                        className={`w-full bg-gray-50 border px-3 py-2.5 text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 transition-all ${errors.name ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-[#0e540b]"}`}
+                        placeholder="e.g. Family Pack"
+                      />
+                      {errors.name && <p className="mt-1 text-[10px] font-medium text-red-600 flex items-center gap-1"><span>!</span>{errors.name}</p>}
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Stock (pieces) *
-                  </label>
-                  <input
-                    type="number"
-                    value={setsForm.stockPieces}
-                    onChange={(e) =>
-                      handleSetInputChange("stockPieces", e.target.value)
-                    }
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                      errors.stockPieces
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-green-500"
-                    }`}
-                    placeholder="Total pieces available"
-                    disabled={isLoading}
-                  />
-                  {errors.stockPieces && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.stockPieces}
-                    </p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Image URL *
-                    </label>
-                    <input
-                      type="url"
-                      value={setsForm.image}
-                      onChange={(e) =>
-                        handleSetInputChange("image", e.target.value)
-                      }
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                        errors.image
-                          ? "border-red-300 focus:ring-red-500"
-                          : "border-gray-300 focus:ring-green-500"
-                      }`}
-                      placeholder="https://example.com/image.jpg"
-                      disabled={isLoading}
-                    />
-                    {errors.image && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.image}
-                      </p>
-                    )}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">Stock Limit (Pieces)</label>
+                      <input
+                        type="number"
+                        value={setsForm.stockPieces}
+                        onChange={(e) => handleSetInputChange("stockPieces", e.target.value)}
+                        className={`w-full bg-gray-50 border px-3 py-2.5 text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 transition-all ${errors.stockPieces ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-[#0e540b]"}`}
+                        placeholder="e.g. 50"
+                      />
+                      {errors.stockPieces && <p className="mt-1 text-[10px] font-medium text-red-600">{errors.stockPieces}</p>}
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Category/Screen
-                    </label>
-                    <select
-                      value={setsForm.screen}
-                      onChange={(e) =>
-                        handleSetInputChange("screen", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                      disabled={isLoading}
-                    >
-                      <option value="1">Category 1 - Fresh Vegetables</option>
-                      <option value="2">Category 2 - Leafy Greens</option>
-                      <option value="3">Category 3 - Root Vegetables</option>
-                    </select>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">Description</label>
+                      <textarea
+                        value={setsForm.description}
+                        onChange={(e) => handleSetInputChange("description", e.target.value)}
+                        rows="4"
+                        className="w-full bg-gray-50 border border-gray-200 px-3 py-2.5 text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 focus:border-[#0e540b] transition-all resize-none placeholder-gray-400"
+                        placeholder="Describe what's in the set..."
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Offer
-                  </label>
-                  <input
-                    type="text"
-                    value={setsForm.offer}
-                    onChange={(e) =>
-                      handleSetInputChange("offer", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    placeholder="e.g., Buy 6 get 1 free"
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={setsForm.description}
-                    onChange={(e) =>
-                      handleSetInputChange("description", e.target.value)
-                    }
-                    rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-                    placeholder="Optional description"
-                    disabled={isLoading}
-                  />
-                </div>
-
-                {/* Sets list */}
-                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                {/* Sets Builder */}
+                <div className="pt-6 border-t border-gray-100">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-sm font-semibold text-black">
-                      📦 Set Options
+                    <h3 className="text-sm font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                      <Package size={16} className="text-[#0e540b]" /> Set Configurations
                     </h3>
                     <button
                       type="button"
                       onClick={addSetItem}
-                      className="px-3 py-1 bg-[#0e540b] text-white text-sm rounded-md"
+                      className="px-3 py-1.5 bg-gray-900 text-white text-[10px] font-bold uppercase tracking-wide rounded-md hover:bg-black transition-colors"
                     >
-                      + Add Set
+                      + Add Option
                     </button>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {setsForm.sets.map((s, idx) => (
-                      <div
-                        key={idx}
-                        className="p-4 bg-white rounded-lg border border-gray-300"
-                      >
-                        <div className="flex justify-between items-center mb-3">
-                          <h4 className="text-sm font-medium text-black">
-                            Set {idx + 1}
-                          </h4>
-                          {setsForm.sets.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeSetItem(idx)}
-                              className="text-red-600 text-sm"
-                            >
-                              Remove
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
+                      <div key={idx} className="bg-gray-50 p-4 rounded-xl border border-gray-200 relative group hover:border-gray-300 hover:shadow-sm transition-all">
+                        {setsForm.sets.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeSetItem(idx)}
+                            className="absolute top-2 right-2 h-6 w-6 flex items-center justify-center bg-white rounded-full text-red-500 shadow-sm border border-gray-100 hover:bg-red-50 transition-all"
+                          >
+                            &times;
+                          </button>
+                        )}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                              Quantity *
-                            </label>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Quantity</label>
                             <input
                               type="number"
-                              min="1"
                               value={s.quantity}
-                              onChange={(e) =>
-                                updateSetItem(idx, "quantity", e.target.value)
-                              }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                              placeholder="e.g., 6"
+                              onChange={(e) => updateSetItem(idx, "quantity", e.target.value)}
+                              className="w-full bg-white border border-gray-200 p-2 rounded-lg text-sm font-bold text-gray-900 focus:outline-none focus:border-[#0e540b] focus:ring-1 focus:ring-[#0e540b]/20"
+                              placeholder="Qty"
                             />
-                            {errors[`sets.${idx}.quantity`] && (
-                              <p className="text-xs text-red-600">
-                                {errors[`sets.${idx}.quantity`]}
-                              </p>
-                            )}
                           </div>
-
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                              Unit
-                            </label>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Unit Type</label>
                             <select
                               value={s.unit}
-                              onChange={(e) =>
-                                updateSetItem(idx, "unit", e.target.value)
-                              }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
+                              onChange={(e) => updateSetItem(idx, "unit", e.target.value)}
+                              className="w-full bg-white border border-gray-200 p-2 rounded-lg text-sm font-bold text-gray-900 focus:outline-none focus:border-[#0e540b] focus:ring-1 focus:ring-[#0e540b]/20"
                             >
                               <option value="pieces">Pieces</option>
                               <option value="bundles">Bundles</option>
@@ -774,235 +567,93 @@ const AddVegetableForm = () => {
                               <option value="nos">Nos</option>
                             </select>
                           </div>
-
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                              Price ₹ *
-                            </label>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Our Price</label>
                             <input
                               type="number"
-                              min="0"
-                              step="0.01"
                               value={s.price}
-                              onChange={(e) =>
-                                updateSetItem(idx, "price", e.target.value)
-                              }
-                              className="w-full px-3 py-2 border border-[#0e540b]/40 bg-[#0e540b]/5 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                              placeholder="e.g., 10"
+                              onChange={(e) => updateSetItem(idx, "price", e.target.value)}
+                              className="w-full bg-white border border-gray-200 p-2 rounded-lg text-sm font-bold text-[#0e540b] focus:outline-none focus:border-[#0e540b] focus:ring-1 focus:ring-[#0e540b]/20"
+                              placeholder="₹"
                             />
-                            {errors[`sets.${idx}.price`] && (
-                              <p className="text-xs text-red-600">
-                                {errors[`sets.${idx}.price`]}
-                              </p>
-                            )}
                           </div>
-
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                              Market Price ₹
-                            </label>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Market Price</label>
                             <input
                               type="number"
-                              min="0"
-                              step="0.01"
                               value={s.marketPrice}
-                              onChange={(e) =>
-                                updateSetItem(
-                                  idx,
-                                  "marketPrice",
-                                  e.target.value
-                                )
-                              }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                              placeholder="Optional"
+                              onChange={(e) => updateSetItem(idx, "marketPrice", e.target.value)}
+                              className="w-full bg-white border border-gray-200 p-2 rounded-lg text-sm font-bold text-gray-500 focus:outline-none focus:border-[#0e540b] focus:ring-1 focus:ring-[#0e540b]/20"
+                              placeholder="₹"
                             />
-                          </div>
-
-                          <div className="col-span-2">
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                              Label (optional)
-                            </label>
-                            <input
-                              type="text"
-                              value={s.label}
-                              onChange={(e) =>
-                                updateSetItem(idx, "label", e.target.value)
-                              }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0e540b]"
-                              placeholder="e.g., 6 Bhaji Bundle"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">
-                              Auto-generated if left empty
-                            </p>
                           </div>
                         </div>
-
-                        {/* preview */}
-                        {s.quantity && s.price && (
-                          <div className="mt-3 p-2 bg-[#0e540b]/5 rounded border border-[#0e540b]/20">
-                            <p className="text-sm font-medium text-[#0e540b]">
-                              {s.label || `${s.quantity} ${s.unit}`} - ₹
-                              {s.price}
-                              {s.marketPrice && (
-                                <span className="text-gray-600 ml-2">
-                                  (Market: ₹{s.marketPrice}, Save: ₹
-                                  {(
-                                    Number(s.marketPrice) - Number(s.price)
-                                  ).toFixed(2)}
-                                  )
-                                </span>
-                              )}
-                            </p>
-                          </div>
-                        )}
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* Shared Details for Sets */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">Set Image URL</label>
+                    <input
+                      type="url"
+                      value={setsForm.image}
+                      onChange={(e) => handleSetInputChange("image", e.target.value)}
+                      className={`w-full bg-gray-50 border px-3 py-2.5 text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 transition-all ${errors.image ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-[#0e540b]"}`}
+                      placeholder="https://"
+                    />
+                    {errors.image && <p className="mt-1 text-[10px] font-medium text-red-600">{errors.image}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">Category</label>
+                    <div className="relative">
+                      <select
+                        value={setsForm.screen}
+                        onChange={(e) => handleSetInputChange("screen", e.target.value)}
+                        className="w-full appearance-none bg-gray-50 border border-gray-200 px-3 py-2.5 text-gray-900 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0e540b]/20 focus:border-[#0e540b] transition-all"
+                      >
+                        <option value="1">Fresh Vegetables</option>
+                        <option value="2">Leafy Greens</option>
+                        <option value="3">Root Vegetables</option>
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Actions */}
-            <div className="pt-6">
-              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  disabled={isLoading}
-                  className="w-full sm:w-1/2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 disabled:opacity-50"
-                >
-                  Reset Form
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full sm:w-1/2 px-4 py-2 text-sm font-medium text-white bg-[#0e540b] rounded-md hover:brightness-90 disabled:opacity-50 flex items-center justify-center"
-                >
-                  {isLoading ? (
-                    <>
-                      <svg
-                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                        ></path>
-                      </svg>
-                      Adding...
-                    </>
-                  ) : (
-                    <>+ Add Vegetable</>
-                  )}
-                </button>
-              </div>
+            <div className="pt-6 flex items-center justify-end gap-3 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={resetForm}
+                className="px-5 py-2.5 rounded-lg font-bold text-gray-500 hover:text-gray-900 hover:bg-gray-100 text-xs uppercase tracking-wide transition-colors"
+                disabled={isLoading}
+              >
+                Reset Form
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="px-6 py-2.5 bg-[#0e540b] text-white font-bold rounded-lg shadow-md hover:shadow-lg hover:bg-[#0b4209] active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:transform-none text-xs uppercase tracking-wide flex items-center gap-2"
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Saving...
+                  </span>
+                ) : (
+                  <span>Add to Inventory</span>
+                )}
+              </button>
             </div>
+
           </form>
-
-          {/* Live preview (both modes) */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h3 className="text-sm sm:text-lg font-semibold text-gray-700 mb-3">
-              Live Preview
-            </h3>
-
-            {mode === "weight" ? (
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 sm:p-6 rounded-lg border border-green-200">
-                <div className="flex items-start space-x-4">
-                  {formData.image && !errors.image && (
-                    <img
-                      src={formData.image}
-                      alt="Preview"
-                      className="w-20 h-20 object-cover rounded-lg border-2 border-white shadow-sm"
-                      onError={(e) => (e.target.style.display = "none")}
-                    />
-                  )}
-                  <div>
-                    <h4 className="text-lg font-bold text-gray-900">
-                      {formData.vegetableName || "Vegetable Name"}
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      Stock: {formData.stock || "0"} kg
-                    </p>
-                    {formData.price1kg && (
-                      <p className="text-sm text-blue-600 font-bold">
-                        VegBazar: ₹{formData.price1kg}
-                      </p>
-                    )}
-                    {formData.marketPrice1kg && (
-                      <p className="text-sm text-green-600 font-bold">
-                        Market: ₹{formData.marketPrice1kg}
-                      </p>
-                    )}
-                    {formData.offer && (
-                      <p className="text-sm text-blue-600 mt-1">
-                        {formData.offer}
-                      </p>
-                    )}
-                    {formData.description && (
-                      <p className="text-xs text-gray-500 mt-2">
-                        {formData.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 sm:p-6 rounded-lg border border-green-200">
-                <div className="flex items-start space-x-4">
-                  {setsForm.image && !errors.image && (
-                    <img
-                      src={setsForm.image}
-                      alt="Preview"
-                      className="w-20 h-20 object-cover rounded-lg border-2 border-white shadow-sm"
-                      onError={(e) => (e.target.style.display = "none")}
-                    />
-                  )}
-                  <div>
-                    <h4 className="text-lg font-bold text-gray-900">
-                      {setsForm.name || "Set Name"}
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      Stock pieces: {setsForm.stockPieces || "0"}
-                    </p>
-                    {setsForm.offer && (
-                      <p className="text-sm text-blue-600 mt-1">
-                        {setsForm.offer}
-                      </p>
-                    )}
-                    {setsForm.description && (
-                      <p className="text-xs text-gray-500 mt-2">
-                        {setsForm.description}
-                      </p>
-                    )}
-                    <div className="mt-2 space-y-2">
-                      {(setsForm.sets || []).map((s, i) => (
-                        <div key={i} className="text-sm text-gray-700">
-                          {s.label || `${s.quantity} ${s.unit}`} — ₹{s.price}{" "}
-                          {s.marketPrice ? (
-                            <span className="text-gray-500">
-                              {" "}
-                              (M ₹{s.marketPrice})
-                            </span>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>

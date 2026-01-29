@@ -1,36 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FiShoppingCart, 
-  FiUsers, 
-  FiTrendingUp, 
+import {
+  FiShoppingCart,
+  FiUsers,
+  FiTrendingUp,
   FiPackage,
   FiDollarSign,
   FiCheck,
   FiClock,
   FiX,
   FiRefreshCw,
-  FiCalendar
 } from 'react-icons/fi';
-import { 
-  LineChart, 
-  Line, 
-  BarChart, 
-  Bar, 
-  PieChart, 
-  Pie, 
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
   Cell,
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
 } from 'recharts';
 
 const OrderReportDash = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
   const [dashboardData, setDashboardData] = useState({
     overview: {},
     revenue: [],
@@ -41,28 +39,22 @@ const OrderReportDash = () => {
     monthlyTrends: [],
     repeatCustomers: {}
   });
- 
+
   const API_BASE = `${import.meta.env.VITE_API_SERVER_URL}/api/reports`;
 
   useEffect(() => {
     fetchAllReports();
   }, []);
 
-  // Helper function to handle fetch with better error handling
   const fetchWithErrorHandling = async (url) => {
     const response = await fetch(url);
-    
-    // Check if response is ok
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
-    // Check content type
     const contentType = response.headers.get("content-type");
     if (!contentType || !contentType.includes("application/json")) {
       throw new Error(`Expected JSON response but got ${contentType}`);
     }
-    
     return await response.json();
   };
 
@@ -70,9 +62,7 @@ const OrderReportDash = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      console.log('🚀 Fetching data from API_BASE:', API_BASE);
-      
+
       const [
         overview,
         revenue,
@@ -93,17 +83,7 @@ const OrderReportDash = () => {
         fetchWithErrorHandling(`${API_BASE}/repeat-customers`)
       ]);
 
-      console.log('📊 API Responses:');
-      console.log('Overview:', overview);
-      console.log('Revenue:', revenue);
-      console.log('Customers:', customers);
-      console.log('Vegetables:', vegetables);
-      console.log('Status:', status);
-      console.log('Payment:', payment);
-      console.log('Trends:', trends);
-      console.log('Repeat:', repeat);
-
-      const processedData = {
+      setDashboardData({
         overview: overview.data || {},
         revenue: revenue.data?.revenueByPeriod || [],
         topCustomers: customers.data || [],
@@ -112,27 +92,18 @@ const OrderReportDash = () => {
         paymentMethods: payment.data || [],
         monthlyTrends: trends.data || [],
         repeatCustomers: repeat.data?.statistics || {}
-      };
-
-      console.log('✅ Processed Dashboard Data:', processedData);
-      
-      setDashboardData(processedData);
-    } catch (error) {
-      console.error('❌ Error fetching reports:', error);
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack
       });
+    } catch (error) {
+      console.error('Error fetching reports:', error);
       setError(error.message || 'Failed to fetch dashboard data');
     } finally {
       setLoading(false);
     }
   };
 
-  // Chart colors
-  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  // Modern Chart Colors matching the theme
+  const COLORS = ['#0e540b', '#d43900', '#10b981', '#f59e0b', '#6366f1'];
 
-  // Format currency
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -141,24 +112,25 @@ const OrderReportDash = () => {
     }).format(amount);
   };
 
-  // Stats Card Component
-  const StatsCard = ({ title, value, icon: Icon, color, subtitle }) => (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between">
+  const StatsCard = ({ title, value, icon: Icon, color, subtitle, borderColor }) => (
+    <div className={`bg-white rounded-3xl p-6 shadow-sm border-2 ${borderColor || 'border-gray-100'} hover:shadow-lg transition-all duration-300 group`}>
+      <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-gray-500 text-sm font-medium">{title}</p>
-          <h3 className="text-2xl font-bold mt-2" style={{ color }}>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{title}</p>
+          <h3 className="text-3xl font-black mt-2 text-black tracking-tighter">
             {value}
           </h3>
           {subtitle && (
-            <p className="text-gray-400 text-xs mt-1">{subtitle}</p>
+            <p className="text-xs font-bold text-gray-500 mt-2 flex items-center gap-1">
+              {subtitle}
+            </p>
           )}
         </div>
-        <div 
-          className="w-12 h-12 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: `${color}20` }}
+        <div
+          className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110"
+          style={{ backgroundColor: `${color}15`, color: color }}
         >
-          <Icon size={24} style={{ color }} />
+          <Icon size={24} />
         </div>
       </div>
     </div>
@@ -166,10 +138,10 @@ const OrderReportDash = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center font-sans">
         <div className="text-center">
-          <FiRefreshCw className="animate-spin text-blue-500 mx-auto mb-4" size={48} />
-          <p className="text-gray-600 text-lg">Loading Dashboard...</p>
+          <div className="w-12 h-12 border-4 border-[#0e540b]/20 border-t-[#0e540b] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Loading Reports...</p>
         </div>
       </div>
     );
@@ -177,17 +149,19 @@ const OrderReportDash = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full text-center">
-          <FiX className="text-red-500 mx-auto mb-4" size={48} />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Dashboard</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
+      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center p-6 font-sans">
+        <div className="bg-white rounded-3xl shadow-xl border-2 border-red-100 p-8 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <FiX className="text-[#d43900]" size={32} />
+          </div>
+          <h2 className="text-xl font-black text-black mb-2">Failed to Load</h2>
+          <p className="text-gray-500 font-medium mb-8 text-sm">{error}</p>
           <button
             onClick={fetchAllReports}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium inline-flex items-center space-x-2 transition-colors"
+            className="w-full bg-black text-white px-6 py-4 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-[#d43900] transition-colors flex items-center justify-center gap-2"
           >
-            <FiRefreshCw size={18} />
-            <span>Retry</span>
+            <FiRefreshCw size={16} />
+            <span>Retry Connection</span>
           </button>
         </div>
       </div>
@@ -197,192 +171,231 @@ const OrderReportDash = () => {
   const { overview, topCustomers, topVegetables, orderStatus, paymentMethods, monthlyTrends, repeatCustomers } = dashboardData;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50/50 p-6 font-sans">
+      <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Business Dashboard</h1>
-          <p className="text-gray-600">Monitor your vegetable business performance</p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-black tracking-tight uppercase">Analytics Report</h1>
+            <p className="text-gray-500 font-bold text-xs uppercase tracking-wider mt-1">Deep dive into your business stats</p>
+          </div>
+          <button
+            onClick={fetchAllReports}
+            className="bg-white border-2 border-gray-200 text-black hover:border-[#0e540b] hover:text-[#0e540b] px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all shadow-sm"
+          >
+            <FiRefreshCw size={14} />
+            <span>Refresh Data</span>
+          </button>
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
             title="Total Revenue"
             value={formatCurrency(overview.totalRevenue || 0)}
             icon={FiDollarSign}
-            color="#10b981"
+            color="#0e540b"
+            borderColor="border-[#0e540b]"
             subtitle="All-time earnings"
           />
           <StatsCard
             title="Total Orders"
             value={overview.totalOrders || 0}
             icon={FiShoppingCart}
-            color="#3b82f6"
+            color="#000000"
+            borderColor="border-gray-200"
             subtitle={`Avg: ${formatCurrency(overview.averageOrderValue || 0)}`}
           />
           <StatsCard
-            title="Delivered Orders"
+            title="Delivered"
             value={overview.deliveredOrders || 0}
             icon={FiCheck}
-            color="#10b981"
-            subtitle={`${orderStatus.highlights?.deliveryRate || '0%'} delivery rate`}
+            color="#0e540b"
+            borderColor="border-gray-200"
+            subtitle={`${orderStatus.highlights?.deliveryRate || '0%'} success rate`}
           />
           <StatsCard
-            title="Pending Orders"
+            title="Pending"
             value={overview.pendingOrders || 0}
             icon={FiClock}
-            color="#f59e0b"
+            color="#d43900"
+            borderColor="border-[#d43900]"
             subtitle={`${overview.cancelledOrders || 0} cancelled`}
           />
         </div>
 
-        {/* Monthly Trends Chart */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-            <FiTrendingUp className="mr-2 text-blue-500" />
-            Monthly Trends
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyTrends}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="_id.month" 
-                tickFormatter={(month) => {
-                  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                  return months[month - 1];
-                }}
-              />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip 
-                formatter={(value, name) => {
-                  if (name === 'totalRevenue') return [formatCurrency(value), 'Revenue'];
-                  return [value, name === 'totalOrders' ? 'Orders' : 'Delivered'];
-                }}
-              />
-              <Legend />
-              <Line yAxisId="left" type="monotone" dataKey="totalRevenue" stroke="#10b981" strokeWidth={2} name="Revenue" />
-              <Line yAxisId="right" type="monotone" dataKey="totalOrders" stroke="#3b82f6" strokeWidth={2} name="Orders" />
-              <Line yAxisId="right" type="monotone" dataKey="deliveredOrders" stroke="#f59e0b" strokeWidth={2} name="Delivered" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Monthly Trends Chart */}
+          <div className="bg-white rounded-3xl shadow-sm border-2 border-gray-100 p-8 lg:col-span-2">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-lg font-black text-black uppercase tracking-wide flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                  <FiTrendingUp size={18} />
+                </div>
+                Monthly Trends
+              </h2>
+            </div>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={monthlyTrends}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                  <XAxis
+                    dataKey="_id.month"
+                    tickFormatter={(month) => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month - 1]}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }}
+                    dy={10}
+                  />
+                  <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                  <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                    formatter={(value, name) => [
+                      name === 'totalRevenue' ? formatCurrency(value) : value,
+                      name === 'totalRevenue' ? 'Revenue' : (name === 'totalOrders' ? 'Orders' : 'Delivered')
+                    ]}
+                  />
+                  <Legend iconType="circle" />
+                  <Line yAxisId="left" type="monotone" dataKey="totalRevenue" stroke="#0e540b" strokeWidth={3} dot={{ r: 4, fill: '#0e540b' }} activeDot={{ r: 6 }} name="Revenue" />
+                  <Line yAxisId="right" type="monotone" dataKey="totalOrders" stroke="#000000" strokeWidth={3} dot={{ r: 4, fill: '#000000' }} name="Orders" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Order Status Distribution */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <FiPackage className="mr-2 text-purple-500" />
-              Order Status Distribution
+          <div className="bg-white rounded-3xl shadow-sm border-2 border-gray-100 p-8">
+            <h2 className="text-lg font-black text-black uppercase tracking-wide mb-8 flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+                <FiPackage size={18} />
+              </div>
+              Order Status
             </h2>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={orderStatus.statusBreakdown || []}
-                  dataKey="count"
-                  nameKey="_id"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label={(entry) => `${entry._id}: ${entry.count}`}
-                >
-                  {(orderStatus.statusBreakdown || []).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={orderStatus.statusBreakdown || []}
+                    dataKey="count"
+                    nameKey="_id"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                  >
+                    {(orderStatus.statusBreakdown || []).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+                  <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
           {/* Payment Methods */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <FiDollarSign className="mr-2 text-green-500" />
+          <div className="bg-white rounded-3xl shadow-sm border-2 border-gray-100 p-8">
+            <h2 className="text-lg font-black text-black uppercase tracking-wide mb-8 flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
+                <FiDollarSign size={18} />
+              </div>
               Payment Methods
             </h2>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={paymentMethods}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="_id" />
-                <YAxis />
-                <Tooltip formatter={(value, name) => {
-                  if (name === 'totalRevenue') return [formatCurrency(value), 'Revenue'];
-                  return [value, 'Orders'];
-                }} />
-                <Legend />
-                <Bar dataKey="count" fill="#3b82f6" name="Orders" />
-                <Bar dataKey="totalRevenue" fill="#10b981" name="Revenue" />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={paymentMethods}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                  <XAxis dataKey="_id" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                    cursor={{ fill: '#f9fafb' }}
+                    formatter={(value, name) => [name === 'totalRevenue' ? formatCurrency(value) : value, name === 'totalRevenue' ? 'Revenue' : 'Count']}
+                  />
+                  <Legend iconType="circle" />
+                  <Bar dataKey="count" fill="#000000" radius={[4, 4, 0, 0]} name="Count" />
+                  <Bar dataKey="totalRevenue" fill="#0e540b" radius={[4, 4, 0, 0]} name="Revenue" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
-        {/* Top Customers & Top Vegetables */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Top Lists */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Top Customers */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <FiUsers className="mr-2 text-blue-500" />
+          <div className="bg-white rounded-3xl shadow-sm border-2 border-gray-100 p-8 flex flex-col">
+            <h2 className="text-lg font-black text-black uppercase tracking-wide mb-6 flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <FiUsers size={18} />
+              </div>
               Top Customers
             </h2>
-            <div className="space-y-4">
+            <div className="flex-1 space-y-4">
               {topCustomers.map((customer, index) => (
-                <div key={customer._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold">
-                      {index + 1}
+                <div key={customer._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-[#0e540b] transition-colors group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center font-bold text-xs group-hover:bg-[#0e540b] transition-colors">
+                      #{index + 1}
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800">{customer.customerName}</p>
-                      <p className="text-sm text-gray-500">{customer.totalOrders} orders</p>
+                      <p className="font-bold text-black text-sm">{customer.customerName}</p>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{customer.totalOrders} orders</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-green-600">
+                    <p className="font-black text-[#0e540b] text-sm">
                       {formatCurrency(customer.totalRevenue)}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase">
                       Avg: {formatCurrency(customer.averageOrderValue)}
                     </p>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm font-medium text-gray-700">Repeat Customer Rate</p>
-              <p className="text-2xl font-bold text-blue-600">{repeatCustomers.repeatRate || '0%'}</p>
-              <p className="text-xs text-gray-500 mt-1">
-                {repeatCustomers.repeatCustomers || 0} repeat customers out of {repeatCustomers.totalCustomers || 0}
+
+            <div className="mt-8 p-6 bg-[#0e540b]/5 rounded-2xl border border-[#0e540b]/10">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Customer Loyalty</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-3xl font-black text-[#0e540b]">{repeatCustomers.repeatRate || '0%'}</p>
+                <span className="text-xs font-bold text-[#0e540b]">Repeat Rate</span>
+              </div>
+              <p className="text-xs font-medium text-gray-500 mt-2">
+                {repeatCustomers.repeatCustomers || 0} returning customers from {repeatCustomers.totalCustomers || 0} total.
               </p>
             </div>
           </div>
 
           {/* Top Vegetables */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <FiPackage className="mr-2 text-green-500" />
-              Best Selling Vegetables
+          <div className="bg-white rounded-3xl shadow-sm border-2 border-gray-100 p-8">
+            <h2 className="text-lg font-black text-black uppercase tracking-wide mb-6 flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
+                <FiPackage size={18} />
+              </div>
+              Best Sellers
             </h2>
             <div className="space-y-4">
               {topVegetables.map((veg, index) => (
-                <div key={veg._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-semibold">
-                      {index + 1}
+                <div key={veg._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-[#0e540b] transition-colors group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center font-bold text-xs group-hover:bg-[#0e540b] transition-colors">
+                      #{index + 1}
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800">{veg.vegetableName}</p>
-                      <p className="text-sm text-gray-500">{veg.totalQuantity} units sold</p>
+                      <p className="font-bold text-black text-sm">{veg.vegetableName}</p>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{veg.totalQuantity} units sold</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-green-600">
+                    <p className="font-black text-[#0e540b] text-sm">
                       {formatCurrency(veg.totalRevenue)}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase">
                       {veg.orderCount} orders
                     </p>
                   </div>
@@ -390,17 +403,6 @@ const OrderReportDash = () => {
               ))}
             </div>
           </div>
-        </div>
-
-        {/* Refresh Button */}
-        <div className="text-center">
-          <button
-            onClick={fetchAllReports}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium flex items-center mx-auto space-x-2 transition-colors"
-          >
-            <FiRefreshCw size={18} />
-            <span>Refresh Dashboard</span>
-          </button>
         </div>
       </div>
     </div>

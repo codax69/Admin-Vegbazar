@@ -19,11 +19,11 @@ import {
   Package,
   AlertCircle,
   DollarSign,
-  Users,
-  Clock,
   Activity,
   BarChart3,
   ChevronRight,
+  Clock,
+  ArrowRight,
 } from "lucide-react";
 import logo from "../../public/fav.png";
 
@@ -32,7 +32,6 @@ const Dashboard = () => {
   const location = useLocation();
   const { startLoading, stopLoading } = useLoading();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [statsOpen, setStatsOpen] = useState(false);
   const [vegetables, setVegetables] = useState([]);
   const [offers, setOffers] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -74,9 +73,10 @@ const Dashboard = () => {
       name: "Order Report",
       icon: FileBarChart,
       path: "/orderReport",
-    },{
+    },
+    {
       id: "OrderReportDash",
-      name: "Order Report Dashboard",
+      name: "Report Dashboard",
       icon: FileBarChart,
       path: "/order-report-dash",
     },
@@ -88,7 +88,7 @@ const Dashboard = () => {
       const [vegRes, offerRes, orderRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/vegetables`),
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/offers`),
-        axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/orders`),
+        axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/orders/all`),
       ]);
       setVegetables(vegRes.data.data || []);
       setOffers(offerRes.data.data || []);
@@ -104,12 +104,11 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  // ✅ Filter out cancelled orders for all calculations
   const activeOrders = orders.filter(
-    (order) => order.orderStatus !== "cancelled" && order.orderStatus !== "canceled"
+    (order) =>
+      order.orderStatus !== "cancelled" && order.orderStatus !== "canceled"
   );
 
-  // Derived statistics with real data (excluding cancelled orders)
   const totalStockItems = vegetables.length;
   const activeOffers = offers.length;
   const lowStockItems = vegetables.filter((v) => v.stockKg <= 2).length;
@@ -128,9 +127,11 @@ const Dashboard = () => {
     })
     .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
-  const totalRevenue = activeOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+  const totalRevenue = activeOrders.reduce(
+    (sum, o) => sum + (o.totalAmount || 0),
+    0
+  );
 
-  // Calculate yesterday's stats for comparison (excluding cancelled orders)
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split("T")[0];
@@ -138,7 +139,7 @@ const Dashboard = () => {
   const yesterdayOrders = activeOrders.filter((o) =>
     o.orderDate?.startsWith(yesterdayStr)
   ).length;
-  
+
   const yesterdayRevenue = activeOrders
     .filter((o) => o.orderDate?.startsWith(yesterdayStr))
     .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
@@ -150,77 +151,88 @@ const Dashboard = () => {
 
   const revenueTrend =
     yesterdayRevenue > 0
-      ? (((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100).toFixed(1)
+      ? (((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100).toFixed(
+        1
+      )
       : 0;
 
-  // Recent activities with real data (excluding cancelled orders)
   const recentActivities = [
-    ...activeOrders.slice(0, 2).map((order) => ({
+    ...activeOrders.slice(0, 3).map((order) => ({
       type: "order",
-      message: `New order #${order.orderId} - ${order.customerName || order.customerInfo?.name || "Customer"}`,
+      id: order.orderId,
+      message: `New order #${order.orderId} - ${order.customerName || order.customerInfo?.name || "Customer"
+        }`,
       time: new Date(order.orderDate).toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
       }),
-      color: "bg-green-400",
+      color: "bg-[#0e540b]",
+      link: "/orders",
     })),
     ...vegetables
-      .filter((v) => v.stockKg <= 2)
+      .filter((v) => v.stockKg <= 5)
       .slice(0, 2)
       .map((veg) => ({
         type: "stock",
         message: `${veg.name} stock running low (${veg.stockKg} kg)`,
         time: "Now",
-        color: "bg-red-400",
+        color: "bg-[#d43900]",
+        link: "/vegetables",
       })),
-  ].slice(0, 4);
+  ].slice(0, 5);
 
   const statisticsData = [
     {
-      title: "Total Orders Today",
+      title: "TODAY'S ORDERS",
       value: todayOrders,
       icon: ShoppingCart,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      color: "text-white",
+      bgColor: "bg-[#0e540b]",
+      borderColor: "border-[#0e540b]",
       trend: ordersTrend,
       trendUp: ordersTrend >= 0,
     },
     {
-      title: "Today's Revenue",
+      title: "TODAY'S REVENUE",
       value: `₹${todayRevenue.toLocaleString()}`,
       icon: DollarSign,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
+      color: "text-black",
+      bgColor: "bg-gray-100",
+      borderColor: "border-gray-200",
       trend: revenueTrend,
       trendUp: revenueTrend >= 0,
     },
     {
-      title: "Total Stock Items",
+      title: "TOTAL STOCK",
       value: totalStockItems,
       icon: Package,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
+      color: "text-white",
+      bgColor: "bg-black",
+      borderColor: "border-black",
     },
     {
-      title: "Active Offers",
+      title: "ACTIVE OFFERS",
       value: activeOffers,
       icon: Tag,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
+      color: "text-black",
+      bgColor: "bg-gray-100",
+      borderColor: "border-gray-200",
     },
     {
-      title: "Low Stock Alert",
+      title: "LOW STOCK ALERT",
       value: lowStockItems,
       icon: AlertCircle,
-      color: "text-red-600",
-      bgColor: "bg-red-50",
+      color: "text-white",
+      bgColor: "bg-[#d43900]",
+      borderColor: "border-[#d43900]",
     },
     {
-      title: "Total Orders",
+      title: "LIFETIME ORDERS",
       value: totalOrders,
       icon: Activity,
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-50",
+      color: "text-black",
+      bgColor: "bg-gray-100",
+      borderColor: "border-gray-200",
     },
   ];
 
@@ -229,185 +241,210 @@ const Dashboard = () => {
     setSidebarOpen(false);
   };
 
-  // Modern Dashboard Overview Component
   const DashboardOverview = () => (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900">Welcome back! 👋</h2>
-          <p className="text-gray-600 mt-1">
-            Here's what's happening with your store today.
+      {/* Quick Actions Row */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="md:col-span-1 p-5 bg-black rounded-2xl text-white flex flex-col justify-center">
+          <h2 className="text-xl font-bold mb-1">Hello, Admin!</h2>
+          <p className="text-xs text-gray-400 font-medium mb-3">You have {todayOrders} new orders today.</p>
+          <p className="text-[10px] uppercase tracking-wider font-bold text-[#0e540b] flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0e540b] animate-pulse"></span>
+            System Online
           </p>
         </div>
-        <div className="hidden md:flex items-center gap-2 text-sm text-gray-600">
-          <Clock className="w-4 h-4" />
-          {new Date().toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
+
+        <button
+          onClick={() => navigate("/add-vegetable")}
+          className="group md:col-span-1 p-4 bg-white rounded-2xl border border-gray-200 hover:border-[#0e540b] transition-all duration-300 flex flex-col justify-between hover:shadow-md"
+        >
+          <div className="flex justify-between items-start w-full">
+            <div className="p-2 bg-[#0e540b]/10 rounded-xl group-hover:bg-[#0e540b] transition-colors">
+              <Plus className="w-5 h-5 text-[#0e540b] group-hover:text-white" />
+            </div>
+            <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#0e540b] transform group-hover:translate-x-1 transition-all" />
+          </div>
+          <div className="text-left mt-3">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Quick Action</span>
+            <span className="text-base font-bold text-black">Add Product</span>
+          </div>
+        </button>
+
+        <button
+          onClick={() => navigate("/offers")}
+          className="group md:col-span-1 p-4 bg-white rounded-2xl border border-gray-200 hover:border-[#d43900] transition-all duration-300 flex flex-col justify-between hover:shadow-md"
+        >
+          <div className="flex justify-between items-start w-full">
+            <div className="p-2 bg-[#d43900]/10 rounded-xl group-hover:bg-[#d43900] transition-colors">
+              <Tag className="w-5 h-5 text-[#d43900] group-hover:text-white" />
+            </div>
+            <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#d43900] transform group-hover:translate-x-1 transition-all" />
+          </div>
+          <div className="text-left mt-3">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Quick Action</span>
+            <span className="text-base font-bold text-black">New Offer</span>
+          </div>
+        </button>
+
+        <button
+          onClick={() => navigate("/orders")}
+          className="group md:col-span-1 p-4 bg-white rounded-2xl border border-gray-200 hover:border-blue-600 transition-all duration-300 flex flex-col justify-between hover:shadow-md"
+        >
+          <div className="flex justify-between items-start w-full">
+            <div className="p-2 bg-blue-50 rounded-xl group-hover:bg-blue-600 transition-colors">
+              <ShoppingCart className="w-5 h-5 text-blue-600 group-hover:text-white" />
+            </div>
+            <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-600 transform group-hover:translate-x-1 transition-all" />
+          </div>
+          <div className="text-left mt-3">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Quick Action</span>
+            <span className="text-base font-bold text-black">Manage Orders</span>
+          </div>
+        </button>
+      </div>
+
+      {/* Stats Grid */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-black uppercase tracking-tight">Real-Time Overview</h3>
+          <div className="px-2 py-1 bg-white border border-gray-100 rounded-full text-[10px] font-bold text-gray-400 flex items-center gap-1.5 shadow-sm">
+            <Clock className="w-3 h-3" />
+            Last updated: Just now
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {statisticsData.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <div
+                key={index}
+                className={`bg-white rounded-2xl shadow-sm border ${stat.borderColor} p-5 hover:shadow-md transition-all duration-300 group relative overflow-hidden`}
+              >
+                <div className="relative z-10 flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                      {stat.title}
+                    </p>
+                    <div className="flex items-baseline mt-2">
+                      <h3 className="text-2xl font-bold text-black tracking-tight">
+                        {stat.value}
+                      </h3>
+                      {stat.trend !== undefined && (
+                        <div
+                          className={`ml-2 flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-full ${stat.trendUp
+                              ? "bg-green-50 text-[#0e540b]"
+                              : "bg-red-50 text-[#d43900]"
+                            }`}
+                        >
+                          {stat.trendUp ? (
+                            <TrendingUp className="w-2.5 h-2.5 mr-1" />
+                          ) : (
+                            <TrendingDown className="w-2.5 h-2.5 mr-1" />
+                          )}
+                          {Math.abs(stat.trend)}%
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className={`${stat.bgColor} p-3 rounded-xl`}>
+                    <Icon className={`w-5 h-5 ${stat.color}`} />
+                  </div>
+                </div>
+              </div>
+            );
           })}
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {statisticsData.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={index}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200 hover:scale-105"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600">
-                    {stat.title}
-                  </p>
-                  <div className="flex items-baseline mt-2">
-                    <h3 className="text-3xl font-bold text-gray-900">
-                      {stat.value}
-                    </h3>
-                    {stat.trend !== undefined && (
-                      <div
-                        className={`ml-3 flex items-center text-sm font-medium ${
-                          stat.trendUp ? "text-green-600" : "text-red-600"
-                        }`}
-                      >
-                        {stat.trendUp ? (
-                          <TrendingUp className="w-4 h-4 mr-1" />
-                        ) : (
-                          <TrendingDown className="w-4 h-4 mr-1" />
-                        )}
-                        {Math.abs(stat.trend)}%
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className={`${stat.bgColor} p-3 rounded-lg`}>
-                  <Icon className={`w-6 h-6 ${stat.color}`} />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Analytics & Activity Split */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      {/* Charts and Activity Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Chart Placeholder */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Revenue Overview
+        {/* Revenue Mini-Table */}
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-sm font-bold text-black uppercase tracking-wide">
+              Financial Breakdown
             </h3>
-            <BarChart3 className="w-5 h-5 text-gray-400" />
+            <BarChart3 className="w-4 h-4 text-gray-400" />
           </div>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Total Revenue</span>
-              <span className="text-lg font-semibold text-gray-900">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col items-center text-center">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total Revenue</span>
+              <span className="text-lg font-bold text-black">
                 ₹{totalRevenue.toLocaleString()}
               </span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Total Orders</span>
-              <span className="text-lg font-semibold text-gray-900">
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col items-center text-center">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total Orders</span>
+              <span className="text-lg font-bold text-black">
                 {totalOrders}
               </span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Average Order Value</span>
-              <span className="text-lg font-semibold text-gray-900">
-                ₹{totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : 0}
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col items-center text-center">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Avg Value</span>
+              <span className="text-lg font-bold text-black">
+                ₹{totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(0) : 0}
               </span>
+            </div>
+          </div>
+          <div className="mt-5 pt-5 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-gray-500">Revenue Growth (vs Yesterday)</span>
+              <span className={`text-xs font-bold ${Number(revenueTrend) >= 0 ? "text-[#0e540b]" : "text-[#d43900]"}`}>
+                {Number(revenueTrend) >= 0 ? "+" : ""}{revenueTrend}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
+              <div
+                className={`h-1.5 rounded-full ${Number(revenueTrend) >= 0 ? "bg-[#0e540b]" : "bg-[#d43900]"}`}
+                style={{ width: `${Math.min(Math.abs(Number(revenueTrend)), 100)}%` }}
+              ></div>
             </div>
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        {/* Recent Activity Feed */}
+        <div className="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-sm font-bold text-black uppercase tracking-wide">
               Recent Activity
             </h3>
-            <Activity className="w-5 h-5 text-gray-400" />
+            <Activity className="w-4 h-4 text-gray-400" />
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3 flex-1 overflow-y-auto pr-1 max-h-[300px] scrollbar-hide">
             {recentActivities.length > 0 ? (
               recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div
-                    className={`w-2 h-2 mt-2 rounded-full ${activity.color} flex-shrink-0`}
-                  ></div>
+                <div
+                  key={index}
+                  onClick={() => activity.link && navigate(activity.link)}
+                  className={`flex items-start gap-3 p-2.5 rounded-xl transition-colors cursor-pointer hover:bg-gray-50 ${index !== recentActivities.length - 1 ? "border-b border-gray-50" : ""}`}
+                >
+                  <div className={`w-1.5 h-1.5 mt-1.5 rounded-full ${activity.color} flex-shrink-0`}></div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900 truncate">
+                    <p className="text-xs font-bold text-black leading-snug">
                       {activity.message}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
                       {activity.time}
                     </p>
                   </div>
+                  <ChevronRight className="w-3 h-3 text-gray-300" />
                 </div>
               ))
             ) : (
-              <p className="text-sm text-gray-500 text-center py-4">
-                No recent activity
-              </p>
+              <div className="flex flex-col items-center justify-center py-8 opacity-50 h-full">
+                <Activity className="w-8 h-8 text-gray-300 mb-2" />
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  No recent activity
+                </p>
+              </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6 border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button
-            onClick={() => navigate("/add-vegetable")}
-            className="flex items-center justify-between p-4 bg-white rounded-lg hover:shadow-md transition-all duration-200 group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Plus className="w-5 h-5 text-green-600" />
-              </div>
-              <span className="text-sm font-medium text-gray-900">
-                Add Vegetable
-              </span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
-          </button>
-
-          <button
-            onClick={() => navigate("/offers")}
-            className="flex items-center justify-between p-4 bg-white rounded-lg hover:shadow-md transition-all duration-200 group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Tag className="w-5 h-5 text-orange-600" />
-              </div>
-              <span className="text-sm font-medium text-gray-900">
-                Create Offer
-              </span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
-          </button>
-
           <button
             onClick={() => navigate("/orders")}
-            className="flex items-center justify-between p-4 bg-white rounded-lg hover:shadow-md transition-all duration-200 group"
+            className="w-full mt-3 py-2 text-[10px] font-bold uppercase tracking-widest text-center text-gray-500 hover:text-black border-t border-gray-100 transition-colors"
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <ShoppingCart className="w-5 h-5 text-blue-600" />
-              </div>
-              <span className="text-sm font-medium text-gray-900">
-                View Orders
-              </span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+            View All Activity
           </button>
         </div>
       </div>
@@ -415,56 +452,55 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50/50 font-sans">
       {/* Mobile Left sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 flex z-40 lg:hidden">
           <div
-            className="fixed inset-0 backdrop-blur-sm"
+            className="fixed inset-0 backdrop-blur-md bg-white/30"
             onClick={() => setSidebarOpen(false)}
           ></div>
           <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-2xl">
             <div className="absolute top-0 right-0 -mr-12 pt-2">
               <button
                 type="button"
-                className="ml-1 flex items-center justify-center h-10 w-10 rounded-full bg-white shadow-lg focus:outline-none"
+                className="ml-1 flex items-center justify-center h-10 w-10 rounded-full bg-black shadow-lg focus:outline-none"
                 onClick={() => setSidebarOpen(false)}
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5 text-white" />
               </button>
             </div>
-            <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+            <div className="flex-1 h-0 pt-6 pb-4 overflow-y-auto">
               <div className="flex-shrink-0 flex items-center px-6 mb-8">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-md">
                   <img
                     src={logo}
-                    className="w-6 h-6 text-white"
+                    className="w-5 h-5 object-contain"
                     alt="vegbazar-admin"
                   />
                 </div>
-                <h1 className="ml-3 text-xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
+                <h1 className="ml-3 text-lg font-bold text-black tracking-tight">
                   VegBazar
                 </h1>
               </div>
               <nav className="px-3 space-y-1">
                 {navigationItems.map((item) => {
                   const Icon = item.icon;
+                  const isActive = activeRoute === item.id;
                   return (
                     <button
                       key={item.id}
                       onClick={() => handleNavigation(item.path)}
-                      className={`${
-                        activeRoute === item.id
-                          ? "bg-gradient-to-r from-green-50 to-green-100 text-green-700 border-l-4 border-green-600"
-                          : "text-gray-600 hover:bg-gray-50"
-                      } group flex items-center px-3 py-3 text-sm font-medium rounded-lg w-full text-left transition-all duration-150`}
+                      className={`${isActive
+                          ? "bg-black text-white shadow-md shadow-black/10"
+                          : "text-gray-500 hover:bg-gray-100 hover:text-black"
+                        } group flex items-center px-4 py-3 text-xs font-bold rounded-xl w-full text-left transition-all duration-200 uppercase tracking-wide`}
                     >
                       <Icon
-                        className={`mr-3 flex-shrink-0 h-5 w-5 ${
-                          activeRoute === item.id
-                            ? "text-green-600"
-                            : "text-gray-400 group-hover:text-gray-600"
-                        }`}
+                        className={`mr-3 flex-shrink-0 h-4 w-4 ${isActive
+                            ? "text-[#0e540b]"
+                            : "text-gray-400 group-hover:text-black transition-colors"
+                          }`}
                       />
                       {item.name}
                     </button>
@@ -479,39 +515,38 @@ const Dashboard = () => {
       {/* Desktop Left sidebar */}
       <div className="hidden lg:flex lg:flex-shrink-0">
         <div className="flex flex-col w-64">
-          <div className="flex flex-col h-0 flex-1 bg-white border-r border-gray-200">
-            <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-              <div className="flex flex-col items-center flex-shrink-0 px-6 mb-8">
-                <div className="w-12 rounded-lg flex items-center justify-center">
+          <div className="flex flex-col h-0 flex-1 bg-white border-r border-gray-100">
+            <div className="flex-1 flex flex-col pt-6 pb-4 overflow-y-auto">
+              <div className="flex items-center px-6 mb-8">
+                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
                   <img
                     src={logo}
-                    className="w-12 text-white"
+                    className="w-5 h-5 object-contain"
                     alt="vegbazar-admin"
                   />
                 </div>
-                <h1 className="text-xl font-bold text-black bg-clip-text ">
-                  VegBazar
+                <h1 className="ml-3 text-lg font-black text-black tracking-tight">
+                  VegBazar<span className="text-[#0e540b]">.</span>
                 </h1>
               </div>
               <nav className="flex-1 px-3 space-y-1">
                 {navigationItems.map((item) => {
                   const Icon = item.icon;
+                  const isActive = activeRoute === item.id;
                   return (
                     <button
                       key={item.id}
                       onClick={() => handleNavigation(item.path)}
-                      className={`${
-                        activeRoute === item.id
-                          ? "bg-gradient-to-r from-green-50 to-green-100 text-green-700 border-l-4 border-green-600"
-                          : "text-gray-600 hover:bg-gray-50"
-                      } group flex items-center px-3 py-3 text-sm font-medium rounded-lg w-full text-left transition-all duration-150`}
+                      className={`${isActive
+                          ? "bg-black text-white shadow-lg shadow-black/10 transform translate-x-1"
+                          : "text-gray-500 hover:bg-gray-50 hover:text-black hover:font-bold"
+                        } group flex items-center px-4 py-3 text-xs font-bold rounded-xl w-full text-left transition-all duration-200 uppercase tracking-wider`}
                     >
                       <Icon
-                        className={`mr-3 flex-shrink-0 h-5 w-5 ${
-                          activeRoute === item.id
-                            ? "text-green-600"
-                            : "text-gray-400 group-hover:text-gray-600"
-                        }`}
+                        className={`mr-3 flex-shrink-0 h-4 w-4 ${isActive
+                            ? "text-[#0e540b]"
+                            : "text-gray-300 group-hover:text-black transition-colors"
+                          }`}
                       />
                       {item.name}
                     </button>
@@ -519,49 +554,65 @@ const Dashboard = () => {
                 })}
               </nav>
             </div>
+
+            {/* Sidebar Footer */}
+            <div className="p-3 m-3 bg-gray-50 rounded-xl border border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-[#0e540b] flex items-center justify-center text-white font-bold text-[10px]">
+                  VB
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-black">Admin Panel</p>
+                  <p className="text-[8px] font-bold text-gray-400 uppercase tracking-wider">v2.0.0</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main content area */}
-      <div className="flex flex-col w-0 flex-1 overflow-hidden">
+      <div className="flex flex-col w-0 flex-1 overflow-hidden bg-gray-50/50">
         {/* Top header */}
-        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white border-b border-gray-200 shadow-sm">
+        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white/80 backdrop-blur-sm border-b border-gray-100 items-center justify-between px-6">
           <button
             type="button"
-            className="px-4 text-gray-500 focus:outline-none lg:hidden"
+            className="text-gray-500 focus:outline-none lg:hidden"
             onClick={() => setSidebarOpen(true)}
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-5 w-5" />
           </button>
-          <div className="flex-1 px-4 flex justify-between items-center">
-            <div className="flex-1 flex">
-              <h1 className="text-xl font-semibold text-gray-900">
-                {navigationItems.find((item) => item.id === activeRoute)
-                  ?.name || "Dashboard"}
-              </h1>
-            </div>
-            <div className="ml-4 flex items-center md:ml-6 gap-3">
-              <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
+
+          <div className="flex flex-1 justify-between items-center ml-4 lg:ml-0">
+            <h1 className="text-lg font-black text-black tracking-tight uppercase">
+              {navigationItems.find((item) => item.id === activeRoute)
+                ?.name || "Dashboard"}
+            </h1>
+
+            <div className="flex items-center gap-3">
+              <div className="hidden md:flex flex-col items-end mr-2">
+                <span className="text-xs font-bold text-black">Administrator</span>
+                <span className="text-[10px] font-bold text-[#0e540b] uppercase tracking-widest">Super User</span>
+              </div>
+              <div className="relative group cursor-pointer">
+                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md shadow-black/10 group-hover:scale-105 transition-transform">
                   A
                 </div>
+                <div className="absolute right-0 top-0 w-2.5 h-2.5 bg-[#0e540b] rounded-full ring-2 ring-white"></div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Main content */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-50">
-          <div className="py-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              {location.pathname === "/" ||
+        <main className="flex-1 relative overflow-y-auto focus:outline-none p-4 sm:p-6 scrollbar-hide">
+          <div className="max-w-6xl mx-auto">
+            {location.pathname === "/" ||
               location.pathname === "/dashboard" ? (
-                <DashboardOverview />
-              ) : (
-                <Outlet />
-              )}
-            </div>
+              <DashboardOverview />
+            ) : (
+              <Outlet />
+            )}
           </div>
         </main>
       </div>

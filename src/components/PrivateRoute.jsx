@@ -2,10 +2,46 @@ import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const PrivateRoute = () => {
-  const { isLoggedIn } = useAuth();
+// Loading component
+const LoadingSpinner = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      minHeight: "100vh",
+      backgroundColor: "#f9fafb",
+    }}
+  >
+    <div
+      style={{
+        width: "50px",
+        height: "50px",
+        border: "4px solid #e5e7eb",
+        borderTop: "4px solid #0e540b",
+        borderRadius: "50%",
+        animation: "spin 1s linear infinite",
+      }}
+    />
+    <style>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `}</style>
+  </div>
+);
 
-  return isLoggedIn ? <Outlet /> : <Navigate to="/login" />;
-}
+const PrivateRoute = () => {
+  const { isLoggedIn, loading } = useAuth();
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  // Redirect to login if not authenticated
+  return isLoggedIn ? <Outlet /> : <Navigate to="/login" replace />;
+};
 
 export default PrivateRoute;
