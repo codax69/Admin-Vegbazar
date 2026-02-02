@@ -1,4 +1,3 @@
-// Part 1/3 - OrderTable.jsx (Imports, State, API Calls, and Helper Functions)
 
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -299,7 +298,6 @@ const OrderTable = () => {
     }
   };
 
-  // Part 2/4 - OrderTable.jsx (Order Card Component with Status Update)
 
   // Modern Order Card Component with Click to Open Details
   const OrderCard = ({ order }) => {
@@ -497,7 +495,6 @@ const OrderTable = () => {
     );
   };
   
-  // Main Return - Layout, Header, Stats, Filters
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 lg:py-8">

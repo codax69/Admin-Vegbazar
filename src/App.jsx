@@ -7,7 +7,7 @@ import {
 import Dashboard from "./components/Dashboard";
 import AddVegetableForm from "./components/AddVegetableForm";
 import StockPanel from "./components/StockPanel";
-import OfferPanel from "./components/OfferPanel";
+import BasketPanel from "./components/BasketPanel";
 import OrderTable from "./components/OrderTable";
 import PrivateRoute from "./components/PrivateRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -54,7 +54,7 @@ function App() {
           <Route path="orders" element={<OrderTable />} />
           <Route path="add-vegetable" element={<AddVegetableForm />} />
           <Route path="stock" element={<StockPanel />} />
-          <Route path="offers" element={<OfferPanel />} />
+          <Route path="offers" element={<BasketPanel />} />
           <Route path="testimonials" element={<AdminTestimonials />} />
           <Route path="coupon_codes" element={<CouponManagement />} />
           <Route path="add-city" element={<AddCityForm />} />
