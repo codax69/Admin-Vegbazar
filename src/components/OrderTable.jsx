@@ -40,6 +40,8 @@ const OrderTable = () => {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterPayment, setFilterPayment] = useState("");
   const [filterDate, setFilterDate] = useState("");
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingStatusChange, setPendingStatusChange] = useState(null);
 
   // API call to fetch orders
   const OrdersApiCall = async () => {
@@ -66,7 +68,9 @@ const OrderTable = () => {
         city: o.deliveryAddressId?.city || "N/A",
         area: o.deliveryAddressId?.area || "N/A",
         package:
-          o.orderType === "basket" ? o.selectedOffer?.title : "Custom Order",
+          o.orderType === "basket" ? o.selectedBasket?.title || o.selectedOffer?.title : "Custom Order",
+        basketTitle: o.orderType === "basket" ? (o.selectedBasket?.title || o.selectedOffer?.title) : null,
+        basketPrice: o.orderType === "basket" ? (o.basketPrice || o.offerPrice) : 0,
         amount: o.totalAmount || 0,
         vegetablesTotal: o.vegetablesTotal || 0,
         offerPrice: o.offerPrice || 0,
@@ -179,6 +183,31 @@ const OrderTable = () => {
 
   const handleQuickStatusUpdate = (order, newStatus) => {
     updateOrderStatus(order._id, newStatus);
+  };
+
+  // Handle status change with confirmation for delivered/cancelled
+  const handleStatusChange = (orderId, newStatus) => {
+    if (newStatus === "delivered" || newStatus === "cancelled") {
+      setPendingStatusChange({ orderId, newStatus });
+      setShowConfirmModal(true);
+    } else {
+      updateOrderStatus(orderId, newStatus);
+    }
+  };
+
+  // Confirm status change
+  const confirmStatusChange = () => {
+    if (pendingStatusChange) {
+      updateOrderStatus(pendingStatusChange.orderId, pendingStatusChange.newStatus);
+      setShowConfirmModal(false);
+      setPendingStatusChange(null);
+    }
+  };
+
+  // Cancel status change
+  const cancelStatusChange = () => {
+    setShowConfirmModal(false);
+    setPendingStatusChange(null);
   };
 
   useEffect(() => {
@@ -418,7 +447,7 @@ const OrderTable = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                updateOrderStatus(order._id, "placed");
+                handleStatusChange(order._id, "placed");
               }}
               disabled={order.status === "placed"}
               className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${order.status === "placed"
@@ -433,7 +462,7 @@ const OrderTable = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                updateOrderStatus(order._id, "processed");
+                handleStatusChange(order._id, "processed");
               }}
               disabled={order.status === "processed"}
               className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${order.status === "processed"
@@ -448,7 +477,7 @@ const OrderTable = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                updateOrderStatus(order._id, "shipped");
+                handleStatusChange(order._id, "shipped");
               }}
               disabled={order.status === "shipped"}
               className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${order.status === "shipped"
@@ -463,7 +492,7 @@ const OrderTable = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                updateOrderStatus(order._id, "delivered");
+                handleStatusChange(order._id, "delivered");
               }}
               disabled={order.status === "delivered"}
               className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${order.status === "delivered"
@@ -478,7 +507,7 @@ const OrderTable = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                updateOrderStatus(order._id, "cancelled");
+                handleStatusChange(order._id, "cancelled");
               }}
               disabled={order.status === "cancelled"}
               className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 col-span-2 ${order.status === "cancelled"
@@ -494,7 +523,7 @@ const OrderTable = () => {
       </div>
     );
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
@@ -643,7 +672,7 @@ const OrderTable = () => {
             </div>
           )}
         </div>
-        
+
 
         {/* Modern Order Detail Modal */}
         {selectedOrder && (
@@ -690,6 +719,12 @@ const OrderTable = () => {
                           {selectedOrder.orderType === "basket" ? "Basket Order" : "Custom Order"}
                         </span>
                       </div>
+                      {selectedOrder.basketTitle && (
+                        <div>
+                          <p className="text-gray-600 mb-1">Basket</p>
+                          <p className="font-bold text-[#0e540b]">{selectedOrder.basketTitle}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -797,6 +832,12 @@ const OrderTable = () => {
                       <span className="text-gray-600">Vegetables Total</span>
                       <span className="font-medium text-black">₹{selectedOrder.vegetablesTotal}</span>
                     </div>
+                    {selectedOrder.basketPrice > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Basket Price</span>
+                        <span className="font-medium text-[#0e540b]">₹{selectedOrder.basketPrice}</span>
+                      </div>
+                    )}
                     {selectedOrder.offerPrice > 0 && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Offer Price</span>
@@ -948,6 +989,65 @@ const OrderTable = () => {
                   className="w-full px-4 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Confirmation Modal for Delivered/Cancelled */}
+        {showConfirmModal && pendingStatusChange && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-in zoom-in-95 duration-200">
+              {/* Modal Header */}
+              <div className={`px-6 py-4 rounded-t-2xl ${pendingStatusChange.newStatus === "cancelled"
+                  ? "bg-gradient-to-r from-red-600 to-red-700"
+                  : "bg-gradient-to-r from-[#0e540b] to-[#0e540b]/90"
+                }`}>
+                <div className="flex items-center gap-3">
+                  {pendingStatusChange.newStatus === "cancelled" ? (
+                    <XCircle className="w-6 h-6 text-white" />
+                  ) : (
+                    <CheckCircle className="w-6 h-6 text-white" />
+                  )}
+                  <h3 className="text-xl font-bold text-white">Confirm Status Change</h3>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="px-6 py-6">
+                <p className="text-gray-700 text-base mb-2">
+                  Are you sure you want to mark this order as{" "}
+                  <span className={`font-bold ${pendingStatusChange.newStatus === "cancelled"
+                      ? "text-red-600"
+                      : "text-[#0e540b]"
+                    }`}>
+                    {pendingStatusChange.newStatus}
+                  </span>?
+                </p>
+                <p className="text-sm text-gray-500">
+                  {pendingStatusChange.newStatus === "cancelled"
+                    ? "This will cancel the order and may trigger refund processes if applicable."
+                    : "This will mark the order as completed and delivered to the customer."}
+                </p>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex gap-3">
+                <button
+                  onClick={cancelStatusChange}
+                  className="flex-1 px-4 py-2.5 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmStatusChange}
+                  className={`flex-1 px-4 py-2.5 rounded-lg text-white transition-colors text-sm font-medium ${pendingStatusChange.newStatus === "cancelled"
+                      ? "bg-red-600 hover:bg-red-700"
+                      : "bg-[#0e540b] hover:bg-[#0e540b]/90"
+                    }`}
+                >
+                  Confirm
                 </button>
               </div>
             </div>
