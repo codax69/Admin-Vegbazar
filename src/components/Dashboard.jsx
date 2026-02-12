@@ -87,7 +87,7 @@ const Dashboard = () => {
     try {
       const [vegRes, offerRes, orderRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/vegetables`),
-        axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/offers`),
+        axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/baskets`),
         axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/orders/all`),
       ]);
       setVegetables(vegRes.data.data || []);
