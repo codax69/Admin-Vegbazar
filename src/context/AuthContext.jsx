@@ -49,7 +49,7 @@ export function AuthProvider({ children }) {
             const refreshToken = localStorage.getItem("refreshToken");
             if (refreshToken) {
               const response = await axios.post(
-                `${import.meta.env.VITE_API_SERVER_URL}/api/auth/refresh`,
+                `/api/auth/refresh`,
                 { refreshToken },
                 { withCredentials: true }
               );
@@ -92,7 +92,7 @@ export function AuthProvider({ children }) {
 
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_SERVER_URL}/api/auth/me`,
+          `/api/auth/me`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -132,7 +132,7 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/auth/admin/login`,
+        `/api/auth/admin/login`,
         credentials,
         { withCredentials: true }
       );
@@ -183,7 +183,7 @@ export function AuthProvider({ children }) {
   const register = async (userData) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/auth/register`,
+        `/api/auth/register`,
         { ...userData, role: "admin" },
         { withCredentials: true }
       );
