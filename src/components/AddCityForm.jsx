@@ -33,7 +33,7 @@ const AddCityForm = () => {
     setError("");
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/cities/`,
+        `/api/cities/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -75,7 +75,7 @@ const AddCityForm = () => {
     try {
       startLoading();
       await axios.post(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/cities/add`,
+        `/api/cities/add`,
         formData,
         {
           headers: {
@@ -100,7 +100,7 @@ const AddCityForm = () => {
       try {
         startLoading();
         await axios.delete(
-          `${import.meta.env.VITE_API_SERVER_URL}/api/cities/${cityId}`,
+          `/api/cities/${cityId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -149,7 +149,7 @@ const AddCityForm = () => {
     try {
       startLoading();
       await axios.patch(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/cities/${editingCity}`,
+        `/api/cities/${editingCity}`,
         updateData,
         {
           headers: {

@@ -264,7 +264,7 @@ const VegetableUpdateModal = ({ vegetable, isOpen, onClose, onUpdate }) => {
         }
 
         const response = await axios.patch(
-          `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${vegetable._id}`,
+          `/api/vegetables/${vegetable._id}`,
           updateData,
           { headers: { Authorization: `Bearer ${token}` } }
         );

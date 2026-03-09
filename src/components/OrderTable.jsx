@@ -49,7 +49,7 @@ const OrderTable = () => {
     startLoading();
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/orders/all`
+        `/api/orders/all`
       );
       const data = response.data?.data?.orders || [];
 
@@ -132,7 +132,7 @@ const OrderTable = () => {
     startLoading();
     try {
       const response = await axios.patch(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/orders/${orderId}/status`,
+        `/api/orders/${orderId}/status`,
         { orderStatus: newStatus }
       );
 
@@ -160,7 +160,7 @@ const OrderTable = () => {
     startLoading();
     try {
       const response = await axios.patch(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/orders/${orderId}`,
+        `/api/orders/${orderId}`,
         { paymentStatus: newStatus }
       );
 

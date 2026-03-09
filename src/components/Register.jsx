@@ -96,7 +96,7 @@ export default function AdminRegisterPage() {
     startLoading();
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/auth/register`,
+        `/api/auth/register`,
         {
           username: formData.username,
           email: formData.email,

@@ -22,7 +22,7 @@ import {
 import { useLoading } from "../context/LoadingContext";
 import { useAuth } from "../context/AuthContext";
 
-const API_SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
+const API_SERVER_URL = "";
 
 // Custom Input Component with modern styling
 const FormInput = ({ label, error, required, ...props }) => (

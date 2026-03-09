@@ -226,7 +226,7 @@ const AddVegetableForm = () => {
       console.log("Sending payload:", payload); // Debug log
 
       const API_URL =
-        import.meta.env.VITE_API_SERVER_URL || "http://localhost:5000";
+        "";
       const token = localStorage.getItem("token"); // Adjust based on your auth setup
 
       await axios.post(`${API_URL}/api/vegetables/add`, payload, {

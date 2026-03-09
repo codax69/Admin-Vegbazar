@@ -16,7 +16,7 @@ import {
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
-const API_URL = `${import.meta.env.VITE_API_SERVER_URL}/api/testimonials`;
+const API_URL = `/api/testimonials`;
 
 const AdminTestimonials = () => {
   const { token } = useAuth();

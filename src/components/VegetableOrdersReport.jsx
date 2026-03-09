@@ -77,7 +77,7 @@ export default function VegetableOrdersReport() {
 
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/orders/date-range`,
+        `/api/orders/date-range`,
         {
           params: {
             startDate,

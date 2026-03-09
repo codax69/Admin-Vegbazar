@@ -24,6 +24,7 @@ import {
   ChevronRight,
   Clock,
   ArrowRight,
+  User,
 } from "lucide-react";
 import logo from "../../public/fav.png";
 
@@ -80,15 +81,21 @@ const Dashboard = () => {
       icon: FileBarChart,
       path: "/order-report-dash",
     },
+    {
+      id: "users",
+      name: "Users",
+      icon: User,
+      path: "/users",
+    },
   ];
 
   const fetchData = async () => {
     startLoading();
     try {
       const [vegRes, offerRes, orderRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/vegetables`),
-        axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/baskets`),
-        axios.get(`${import.meta.env.VITE_API_SERVER_URL}/api/orders/all`),
+        axios.get(`/api/vegetables`),
+        axios.get(`/api/baskets`),
+        axios.get(`/api/orders/all`),
       ]);
       setVegetables(vegRes.data.data || []);
       setOffers(offerRes.data.data || []);
@@ -332,8 +339,8 @@ const Dashboard = () => {
                       {stat.trend !== undefined && (
                         <div
                           className={`ml-2 flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-full ${stat.trendUp
-                              ? "bg-green-50 text-[#0e540b]"
-                              : "bg-red-50 text-[#d43900]"
+                            ? "bg-green-50 text-[#0e540b]"
+                            : "bg-red-50 text-[#d43900]"
                             }`}
                         >
                           {stat.trendUp ? (
@@ -492,14 +499,14 @@ const Dashboard = () => {
                       key={item.id}
                       onClick={() => handleNavigation(item.path)}
                       className={`${isActive
-                          ? "bg-black text-white shadow-md shadow-black/10"
-                          : "text-gray-500 hover:bg-gray-100 hover:text-black"
+                        ? "bg-black text-white shadow-md shadow-black/10"
+                        : "text-gray-500 hover:bg-gray-100 hover:text-black"
                         } group flex items-center px-4 py-3 text-xs font-bold rounded-xl w-full text-left transition-all duration-200 uppercase tracking-wide`}
                     >
                       <Icon
                         className={`mr-3 flex-shrink-0 h-4 w-4 ${isActive
-                            ? "text-[#0e540b]"
-                            : "text-gray-400 group-hover:text-black transition-colors"
+                          ? "text-[#0e540b]"
+                          : "text-gray-400 group-hover:text-black transition-colors"
                           }`}
                       />
                       {item.name}
@@ -538,14 +545,14 @@ const Dashboard = () => {
                       key={item.id}
                       onClick={() => handleNavigation(item.path)}
                       className={`${isActive
-                          ? "bg-black text-white shadow-lg shadow-black/10 transform translate-x-1"
-                          : "text-gray-500 hover:bg-gray-50 hover:text-black hover:font-bold"
+                        ? "bg-black text-white shadow-lg shadow-black/10 transform translate-x-1"
+                        : "text-gray-500 hover:bg-gray-50 hover:text-black hover:font-bold"
                         } group flex items-center px-4 py-3 text-xs font-bold rounded-xl w-full text-left transition-all duration-200 uppercase tracking-wider`}
                     >
                       <Icon
                         className={`mr-3 flex-shrink-0 h-4 w-4 ${isActive
-                            ? "text-[#0e540b]"
-                            : "text-gray-300 group-hover:text-black transition-colors"
+                          ? "text-[#0e540b]"
+                          : "text-gray-300 group-hover:text-black transition-colors"
                           }`}
                       />
                       {item.name}

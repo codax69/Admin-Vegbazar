@@ -40,7 +40,7 @@ const OrderReportDash = () => {
     repeatCustomers: {}
   });
 
-  const API_BASE = `${import.meta.env.VITE_API_SERVER_URL}/api/reports`;
+  const API_BASE = `/api/reports`;
 
   useEffect(() => {
     fetchAllReports();

@@ -22,7 +22,7 @@ const VegetableTable = () => {
       setLoading(true);
       setError(null);
       const response = await axios.get(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables`
+        `/api/vegetables`
       );
       setVegetables(response.data.data);
     } catch (error) {
@@ -41,7 +41,7 @@ const VegetableTable = () => {
     startLoading();
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_SERVER_URL}/api/vegetables/${id}`,
+        `/api/vegetables/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
