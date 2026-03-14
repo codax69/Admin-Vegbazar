@@ -32,6 +32,7 @@ const UserManagement = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [userOrders, setUserOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(false);
+    const [orderSearchTerm, setOrderSearchTerm] = useState("");
 
     // Fetch Users
     const fetchUsers = async () => {
@@ -39,12 +40,12 @@ const UserManagement = () => {
         try {
             // Trying likely endpoints for user management
             const response = await axios.get(
-                `/api/users/all-users`
+                `/api/auth/users`
             );
 
             const data = response.data?.users || response.data?.data || [];
-            setUsers(data);
-            setFilteredUsers(data);
+            setUsers(data.users);
+            setFilteredUsers(data.users);
         } catch (error) {
             console.error("Error fetching users:", error);
             // Fallback for demo/development if endpoint doesn't exist yet
@@ -107,11 +108,23 @@ const UserManagement = () => {
                 (user) =>
                     (user.username || "").toLowerCase().includes(lowerTerm) ||
                     (user.email || "").toLowerCase().includes(lowerTerm) ||
-                    (user.phone || "").includes(lowerTerm)
+                    String(user.phone || "").includes(lowerTerm) ||
+                    String(user._id || "").toLowerCase().includes(lowerTerm)
             );
             setFilteredUsers(filtered);
         }
     }, [searchTerm, users]);
+
+    // Format User Orders based on orderSearchTerm
+    const filteredUserOrders = userOrders.filter((order) => {
+        if (!orderSearchTerm) return true;
+        const lowTerm = orderSearchTerm.toLowerCase();
+        return (
+            (order.orderId || "").toLowerCase().includes(lowTerm) ||
+            (order.orderStatus || "").toLowerCase().includes(lowTerm) ||
+            String(order.totalAmount || "").includes(lowTerm)
+        );
+    });
 
     const handleUserClick = (user) => {
         setSelectedUser(user);
@@ -319,7 +332,20 @@ const UserManagement = () => {
                                     <div className="md:col-span-2">
                                         <div className="flex items-center justify-between mb-4">
                                             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Recent Orders</h4>
-                                            <span className="bg-black text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{userOrders.length}</span>
+                                            <span className="bg-black text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{filteredUserOrders.length}</span>
+                                        </div>
+
+                                        <div className="mb-4">
+                                            <div className="relative">
+                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search orders by ID, status, or amount..."
+                                                    value={orderSearchTerm}
+                                                    onChange={(e) => setOrderSearchTerm(e.target.value)}
+                                                    className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black focus:ring-1 focus:ring-black text-xs transition-all"
+                                                />
+                                            </div>
                                         </div>
 
                                         <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
@@ -327,8 +353,8 @@ const UserManagement = () => {
                                                 <div className="flex justify-center py-8">
                                                     <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-black"></div>
                                                 </div>
-                                            ) : userOrders.length > 0 ? (
-                                                userOrders.map(order => (
+                                            ) : filteredUserOrders.length > 0 ? (
+                                                filteredUserOrders.map(order => (
                                                     <div key={order._id} className="bg-white border border-gray-200 rounded-xl p-4 hover:border-black/20 transition-all">
                                                         <div className="flex items-center justify-between mb-3">
                                                             <div className="flex items-center gap-3">
