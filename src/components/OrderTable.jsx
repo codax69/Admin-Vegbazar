@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useLoading } from "../context/LoadingContext";
@@ -24,7 +23,7 @@ import {
   Phone,
   Mail,
   Tag,
-  ShoppingBag
+  ShoppingBag,
 } from "lucide-react";
 const OrderTable = () => {
   const { startLoading, stopLoading } = useLoading();
@@ -42,17 +41,16 @@ const OrderTable = () => {
   const [filterDate, setFilterDate] = useState("");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
-
-  // API call to fetch orders
+  
   const OrdersApiCall = async () => {
     setLoading(true);
     startLoading();
     try {
       const response = await axios.get(
-        `/api/orders/all`
+        `/api/orders/all`,
       );
       const data = response.data?.data?.orders || [];
-
+      console.log("Fetched Orders:", data);
       const formattedOrders = data.map((o) => ({
         _id: o._id,
         orderId: o.orderId,
@@ -68,9 +66,15 @@ const OrderTable = () => {
         city: o.deliveryAddressId?.city || "N/A",
         area: o.deliveryAddressId?.area || "N/A",
         package:
-          o.orderType === "basket" ? o.selectedBasket?.title || o.selectedOffer?.title : "Custom Order",
-        basketTitle: o.orderType === "basket" ? (o.selectedBasket?.title || o.selectedOffer?.title) : null,
-        basketPrice: o.orderType === "basket" ? (o.basketPrice || o.offerPrice) : 0,
+          o.orderType === "basket"
+            ? o.selectedBasket?.title || o.selectedOffer?.title
+            : "Custom Order",
+        basketTitle:
+          o.orderType === "basket"
+            ? o.selectedBasket?.title || o.selectedOffer?.title
+            : null,
+        basketPrice:
+          o.orderType === "basket" ? o.basketPrice || o.offerPrice : 0,
         amount: o.totalAmount || 0,
         vegetablesTotal: o.vegetablesTotal || 0,
         offerPrice: o.offerPrice || 0,
@@ -92,7 +96,7 @@ const OrderTable = () => {
           marketPrice: getMarketPriceForWeight(v.vegetable, v.weight),
         })),
         items: (o.selectedVegetables || []).map(
-          (v) => v.vegetable?.name || "Unknown"
+          (v) => v.vegetable?.name || "Unknown",
         ),
       }));
 
@@ -131,10 +135,9 @@ const OrderTable = () => {
   const updateOrderStatus = async (orderId, newStatus) => {
     startLoading();
     try {
-      const response = await axios.patch(
-        `/api/orders/${orderId}/status`,
-        { orderStatus: newStatus }
-      );
+      const response = await axios.patch(`/api/orders/${orderId}/status`, {
+        orderStatus: newStatus,
+      });
 
       if (response.data?.success) {
         toast.success(`Order status updated to ${newStatus}`);
@@ -148,7 +151,7 @@ const OrderTable = () => {
     } catch (error) {
       console.error(error);
       toast.error(
-        error?.response?.data?.message || "Failed to update order status"
+        error?.response?.data?.message || "Failed to update order status",
       );
     } finally {
       stopLoading();
@@ -159,10 +162,9 @@ const OrderTable = () => {
   const updatePaymentStatus = async (orderId, newStatus) => {
     startLoading();
     try {
-      const response = await axios.patch(
-        `/api/orders/${orderId}`,
-        { paymentStatus: newStatus }
-      );
+      const response = await axios.patch(`/api/orders/${orderId}`, {
+        paymentStatus: newStatus,
+      });
 
       if (response.data?.success) {
         toast.success(`Payment status updated to ${newStatus}`);
@@ -174,7 +176,7 @@ const OrderTable = () => {
     } catch (error) {
       console.error(error);
       toast.error(
-        error?.response?.data?.message || "Failed to update payment status"
+        error?.response?.data?.message || "Failed to update payment status",
       );
     } finally {
       stopLoading();
@@ -198,7 +200,10 @@ const OrderTable = () => {
   // Confirm status change
   const confirmStatusChange = () => {
     if (pendingStatusChange) {
-      updateOrderStatus(pendingStatusChange.orderId, pendingStatusChange.newStatus);
+      updateOrderStatus(
+        pendingStatusChange.orderId,
+        pendingStatusChange.newStatus,
+      );
       setShowConfirmModal(false);
       setPendingStatusChange(null);
     }
@@ -248,7 +253,7 @@ const OrderTable = () => {
           bg: "bg-[#0e540b]/10",
           text: "text-[#0e540b]",
           border: "border-[#0e540b]/20",
-          icon: CheckCircle
+          icon: CheckCircle,
         };
       case "processing":
       case "processed":
@@ -256,14 +261,14 @@ const OrderTable = () => {
           bg: "bg-[#d43900]/10",
           text: "text-[#d43900]",
           border: "border-[#d43900]/20",
-          icon: Clock
+          icon: Clock,
         };
       case "shipped":
         return {
           bg: "bg-black/5",
           text: "text-black",
           border: "border-black/10",
-          icon: Truck
+          icon: Truck,
         };
       case "placed":
       case "pending":
@@ -271,21 +276,21 @@ const OrderTable = () => {
           bg: "bg-gray-100",
           text: "text-gray-700",
           border: "border-gray-200",
-          icon: Package
+          icon: Package,
         };
       case "cancelled":
         return {
           bg: "bg-red-50",
           text: "text-red-600",
           border: "border-red-200",
-          icon: XCircle
+          icon: XCircle,
         };
       default:
         return {
           bg: "bg-gray-100",
           text: "text-gray-600",
           border: "border-gray-200",
-          icon: Package
+          icon: Package,
         };
     }
   };
@@ -298,35 +303,34 @@ const OrderTable = () => {
         return {
           bg: "bg-[#0e540b]/10",
           text: "text-[#0e540b]",
-          border: "border-[#0e540b]/20"
+          border: "border-[#0e540b]/20",
         };
       case "pending":
         return {
           bg: "bg-[#d43900]/10",
           text: "text-[#d43900]",
-          border: "border-[#d43900]/20"
+          border: "border-[#d43900]/20",
         };
       case "failed":
         return {
           bg: "bg-red-50",
           text: "text-red-600",
-          border: "border-red-200"
+          border: "border-red-200",
         };
       case "refunded":
         return {
           bg: "bg-gray-100",
           text: "text-gray-600",
-          border: "border-gray-200"
+          border: "border-gray-200",
         };
       default:
         return {
           bg: "bg-gray-100",
           text: "text-gray-600",
-          border: "border-gray-200"
+          border: "border-gray-200",
         };
     }
   };
-
 
   // Modern Order Card Component with Click to Open Details
   const OrderCard = ({ order }) => {
@@ -361,11 +365,15 @@ const OrderTable = () => {
             </div>
 
             <div className="flex flex-col gap-1.5 ml-2">
-              <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} flex items-center gap-1 whitespace-nowrap`}>
+              <span
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} flex items-center gap-1 whitespace-nowrap`}
+              >
                 <StatusIcon className="w-3 h-3" />
                 {order.status}
               </span>
-              <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${paymentConfig.bg} ${paymentConfig.text} ${paymentConfig.border} whitespace-nowrap`}>
+              <span
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${paymentConfig.bg} ${paymentConfig.text} ${paymentConfig.border} whitespace-nowrap`}
+              >
                 {order.paymentStatus}
               </span>
             </div>
@@ -378,7 +386,9 @@ const OrderTable = () => {
                 <User className="w-3.5 h-3.5" />
                 <span className="font-medium">Customer</span>
               </div>
-              <p className="text-sm font-medium text-black truncate">{order.customerName}</p>
+              <p className="text-sm font-medium text-black truncate">
+                {order.customerName}
+              </p>
               <p className="text-xs text-gray-600 flex items-center gap-1">
                 <Phone className="w-3 h-3" />
                 {order.phone}
@@ -391,16 +401,23 @@ const OrderTable = () => {
                 <span className="font-medium">Location</span>
               </div>
               <p className="text-sm text-black truncate">{order.area}</p>
-              <p className="text-xs text-gray-600 truncate">{order.city}, {order.state}</p>
+              <p className="text-xs text-gray-600 truncate">
+                {order.city}, {order.state}
+              </p>
             </div>
           </div>
 
           {/* Items Preview */}
           <div className="mb-4">
-            <p className="text-xs text-gray-500 font-medium mb-2">Items ({order.items.length})</p>
+            <p className="text-xs text-gray-500 font-medium mb-2">
+              Items ({order.items.length})
+            </p>
             <div className="flex flex-wrap gap-1.5">
               {order.items.slice(0, 3).map((item, index) => (
-                <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                <span
+                  key={index}
+                  className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
+                >
                   {item}
                 </span>
               ))}
@@ -417,7 +434,9 @@ const OrderTable = () => {
             <div className="mb-4">
               <div className="inline-flex items-center gap-2 px-2.5 py-1.5 bg-gradient-to-r from-[#0e540b]/10 to-[#d43900]/10 border border-[#0e540b]/20 rounded-lg">
                 <Tag className="w-3.5 h-3.5 text-[#0e540b]" />
-                <span className="text-xs font-bold text-black uppercase">{order.coupon.code}</span>
+                <span className="text-xs font-bold text-black uppercase">
+                  {order.coupon.code}
+                </span>
                 <span className="text-xs text-gray-600">
                   {order.coupon.discountType === "percentage"
                     ? `${order.coupon.discountValue}% OFF`
@@ -450,10 +469,11 @@ const OrderTable = () => {
                 handleStatusChange(order._id, "placed");
               }}
               disabled={order.status === "placed"}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${order.status === "placed"
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-gray-600 text-white hover:bg-gray-700"
-                }`}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                order.status === "placed"
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-gray-600 text-white hover:bg-gray-700"
+              }`}
             >
               <Package className="w-3.5 h-3.5" />
               Placed
@@ -465,10 +485,11 @@ const OrderTable = () => {
                 handleStatusChange(order._id, "processed");
               }}
               disabled={order.status === "processed"}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${order.status === "processed"
-                ? "bg-[#d43900]/20 text-[#d43900] cursor-not-allowed"
-                : "bg-[#d43900] text-white hover:bg-[#d43900]/90"
-                }`}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                order.status === "processed"
+                  ? "bg-[#d43900]/20 text-[#d43900] cursor-not-allowed"
+                  : "bg-[#d43900] text-white hover:bg-[#d43900]/90"
+              }`}
             >
               <Clock className="w-3.5 h-3.5" />
               Processing
@@ -480,10 +501,11 @@ const OrderTable = () => {
                 handleStatusChange(order._id, "shipped");
               }}
               disabled={order.status === "shipped"}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${order.status === "shipped"
-                ? "bg-black/10 text-gray-400 cursor-not-allowed"
-                : "bg-black text-white hover:bg-gray-800"
-                }`}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                order.status === "shipped"
+                  ? "bg-black/10 text-gray-400 cursor-not-allowed"
+                  : "bg-black text-white hover:bg-gray-800"
+              }`}
             >
               <Truck className="w-3.5 h-3.5" />
               Shipped
@@ -495,10 +517,11 @@ const OrderTable = () => {
                 handleStatusChange(order._id, "delivered");
               }}
               disabled={order.status === "delivered"}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${order.status === "delivered"
-                ? "bg-[#0e540b]/20 text-[#0e540b] cursor-not-allowed"
-                : "bg-[#0e540b] text-white hover:bg-[#0e540b]/90"
-                }`}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                order.status === "delivered"
+                  ? "bg-[#0e540b]/20 text-[#0e540b] cursor-not-allowed"
+                  : "bg-[#0e540b] text-white hover:bg-[#0e540b]/90"
+              }`}
             >
               <CheckCircle className="w-3.5 h-3.5" />
               Delivered
@@ -510,10 +533,11 @@ const OrderTable = () => {
                 handleStatusChange(order._id, "cancelled");
               }}
               disabled={order.status === "cancelled"}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 col-span-2 ${order.status === "cancelled"
-                ? "bg-red-100 text-red-400 cursor-not-allowed"
-                : "bg-red-600 text-white hover:bg-red-700"
-                }`}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 col-span-2 ${
+                order.status === "cancelled"
+                  ? "bg-red-100 text-red-400 cursor-not-allowed"
+                  : "bg-red-600 text-white hover:bg-red-700"
+              }`}
             >
               <XCircle className="w-3.5 h-3.5" />
               Cancelled
@@ -531,7 +555,9 @@ const OrderTable = () => {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-black mb-2">Order Management</h1>
+              <h1 className="text-3xl font-bold text-black mb-2">
+                Order Management
+              </h1>
               <p className="text-gray-600">Track and manage all your orders</p>
             </div>
           </div>
@@ -543,7 +569,9 @@ const OrderTable = () => {
                 <ShoppingBag className="w-5 h-5 text-gray-600" />
                 <p className="text-sm text-gray-600">Total Orders</p>
               </div>
-              <p className="text-3xl font-bold text-black">{filteredOrders.length}</p>
+              <p className="text-3xl font-bold text-black">
+                {filteredOrders.length}
+              </p>
             </div>
 
             <div className="bg-gradient-to-br from-[#0e540b]/10 to-[#0e540b]/5 border border-[#0e540b]/20 rounded-xl p-4">
@@ -552,7 +580,11 @@ const OrderTable = () => {
                 <p className="text-sm text-gray-600">Delivered</p>
               </div>
               <p className="text-3xl font-bold text-[#0e540b]">
-                {filteredOrders.filter(o => o.status?.toLowerCase() === "delivered").length}
+                {
+                  filteredOrders.filter(
+                    (o) => o.status?.toLowerCase() === "delivered",
+                  ).length
+                }
               </p>
             </div>
 
@@ -562,10 +594,13 @@ const OrderTable = () => {
                 <p className="text-sm text-gray-600">Processing</p>
               </div>
               <p className="text-3xl font-bold text-[#d43900]">
-                {filteredOrders.filter(o =>
-                  o.status?.toLowerCase() === "processing" ||
-                  o.status?.toLowerCase() === "processed"
-                ).length}
+                {
+                  filteredOrders.filter(
+                    (o) =>
+                      o.status?.toLowerCase() === "processing" ||
+                      o.status?.toLowerCase() === "processed",
+                  ).length
+                }
               </p>
             </div>
 
@@ -575,10 +610,13 @@ const OrderTable = () => {
                 <p className="text-sm text-gray-600">Placed</p>
               </div>
               <p className="text-3xl font-bold text-black">
-                {filteredOrders.filter(o =>
-                  o.status?.toLowerCase() === "placed" ||
-                  o.status?.toLowerCase() === "pending"
-                ).length}
+                {
+                  filteredOrders.filter(
+                    (o) =>
+                      o.status?.toLowerCase() === "placed" ||
+                      o.status?.toLowerCase() === "pending",
+                  ).length
+                }
               </p>
             </div>
 
@@ -588,10 +626,13 @@ const OrderTable = () => {
                 <p className="text-sm text-gray-600">Paid</p>
               </div>
               <p className="text-3xl font-bold text-[#0e540b]">
-                {filteredOrders.filter(o =>
-                  o.paymentStatus?.toLowerCase() === "completed" ||
-                  o.paymentStatus?.toLowerCase() === "paid"
-                ).length}
+                {
+                  filteredOrders.filter(
+                    (o) =>
+                      o.paymentStatus?.toLowerCase() === "completed" ||
+                      o.paymentStatus?.toLowerCase() === "paid",
+                  ).length
+                }
               </p>
             </div>
           </div>
@@ -667,12 +708,15 @@ const OrderTable = () => {
           ) : (
             <div className="col-span-full bg-white border border-gray-200 rounded-xl p-16 text-center">
               <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg font-medium">No orders found</p>
-              <p className="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
+              <p className="text-gray-500 text-lg font-medium">
+                No orders found
+              </p>
+              <p className="text-gray-400 text-sm mt-2">
+                Try adjusting your filters
+              </p>
             </div>
           )}
         </div>
-
 
         {/* Modern Order Detail Modal */}
         {selectedOrder && (
@@ -681,8 +725,12 @@ const OrderTable = () => {
               {/* Modal Header */}
               <div className="px-6 py-4 bg-gradient-to-r from-black to-gray-900 flex items-center justify-between sticky top-0 z-10">
                 <div>
-                  <h3 className="text-xl font-bold text-white">Order Details</h3>
-                  <p className="text-white/70 text-sm mt-0.5">{selectedOrder.orderId}</p>
+                  <h3 className="text-xl font-bold text-white">
+                    Order Details
+                  </h3>
+                  <p className="text-white/70 text-sm mt-0.5">
+                    {selectedOrder.orderId}
+                  </p>
                 </div>
                 <button
                   onClick={() => setSelectedOrder(null)}
@@ -704,7 +752,9 @@ const OrderTable = () => {
                     <div className="space-y-2 text-sm">
                       <div>
                         <p className="text-gray-600 mb-1">Order ID</p>
-                        <p className="font-bold text-black">{selectedOrder.orderId}</p>
+                        <p className="font-bold text-black">
+                          {selectedOrder.orderId}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-600 mb-1">Date</p>
@@ -712,17 +762,24 @@ const OrderTable = () => {
                       </div>
                       <div>
                         <p className="text-gray-600 mb-1">Type</p>
-                        <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${selectedOrder.orderType === "basket"
-                          ? "bg-[#0e540b]/10 text-[#0e540b]"
-                          : "bg-gray-100 text-gray-700"
-                          }`}>
-                          {selectedOrder.orderType === "basket" ? "Basket Order" : "Custom Order"}
+                        <span
+                          className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                            selectedOrder.orderType === "basket"
+                              ? "bg-[#0e540b]/10 text-[#0e540b]"
+                              : "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {selectedOrder.orderType === "basket"
+                            ? "Basket Order"
+                            : "Custom Order"}
                         </span>
                       </div>
                       {selectedOrder.basketTitle && (
                         <div>
                           <p className="text-gray-600 mb-1">Basket</p>
-                          <p className="font-bold text-[#0e540b]">{selectedOrder.basketTitle}</p>
+                          <p className="font-bold text-[#0e540b]">
+                            {selectedOrder.basketTitle}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -736,15 +793,21 @@ const OrderTable = () => {
                     <div className="space-y-2 text-sm">
                       <div>
                         <p className="text-gray-600 mb-1">Name</p>
-                        <p className="font-medium text-black">{selectedOrder.customerName}</p>
+                        <p className="font-medium text-black">
+                          {selectedOrder.customerName}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-600 mb-1">Email</p>
-                        <p className="text-black break-all">{selectedOrder.email}</p>
+                        <p className="text-black break-all">
+                          {selectedOrder.email}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-600 mb-1">Phone</p>
-                        <p className="font-medium text-black">{selectedOrder.phone}</p>
+                        <p className="font-medium text-black">
+                          {selectedOrder.phone}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -757,17 +820,23 @@ const OrderTable = () => {
                     <div className="space-y-2 text-sm">
                       <div>
                         <p className="text-gray-600 mb-1">Status</p>
-                        <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium border ${getPaymentConfig(selectedOrder.paymentStatus).bg} ${getPaymentConfig(selectedOrder.paymentStatus).text} ${getPaymentConfig(selectedOrder.paymentStatus).border}`}>
+                        <span
+                          className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium border ${getPaymentConfig(selectedOrder.paymentStatus).bg} ${getPaymentConfig(selectedOrder.paymentStatus).text} ${getPaymentConfig(selectedOrder.paymentStatus).border}`}
+                        >
                           {selectedOrder.paymentStatus}
                         </span>
                       </div>
                       <div>
                         <p className="text-gray-600 mb-1">Method</p>
-                        <p className="font-medium text-black">{selectedOrder.paymentMethod}</p>
+                        <p className="font-medium text-black">
+                          {selectedOrder.paymentMethod}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-600 mb-1">Order Status</p>
-                        <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium border ${getStatusConfig(selectedOrder.status).bg} ${getStatusConfig(selectedOrder.status).text} ${getStatusConfig(selectedOrder.status).border}`}>
+                        <span
+                          className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium border ${getStatusConfig(selectedOrder.status).bg} ${getStatusConfig(selectedOrder.status).text} ${getStatusConfig(selectedOrder.status).border}`}
+                        >
                           {selectedOrder.status}
                         </span>
                       </div>
@@ -779,11 +848,14 @@ const OrderTable = () => {
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <MapPin className="w-5 h-5 text-black" />
-                    <h4 className="font-semibold text-black">Delivery Address</h4>
+                    <h4 className="font-semibold text-black">
+                      Delivery Address
+                    </h4>
                   </div>
                   <p className="text-sm text-black">{selectedOrder.address}</p>
                   <p className="text-sm text-gray-600 mt-1">
-                    {selectedOrder.area}, {selectedOrder.city}, {selectedOrder.state}
+                    {selectedOrder.area}, {selectedOrder.city},{" "}
+                    {selectedOrder.state}
                   </p>
                 </div>
 
@@ -792,16 +864,22 @@ const OrderTable = () => {
                   <div className="bg-gradient-to-r from-[#0e540b]/10 to-[#d43900]/10 border-2 border-[#0e540b]/20 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <Tag className="w-5 h-5 text-[#0e540b]" />
-                      <h4 className="font-semibold text-black">Coupon Applied</h4>
+                      <h4 className="font-semibold text-black">
+                        Coupon Applied
+                      </h4>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                       <div>
                         <p className="text-gray-600 mb-1">Code</p>
-                        <p className="font-bold text-black uppercase">{selectedOrder.coupon.code}</p>
+                        <p className="font-bold text-black uppercase">
+                          {selectedOrder.coupon.code}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-600 mb-1">Type</p>
-                        <p className="text-black capitalize">{selectedOrder.coupon.discountType}</p>
+                        <p className="text-black capitalize">
+                          {selectedOrder.coupon.discountType}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-600 mb-1">Discount</p>
@@ -813,11 +891,16 @@ const OrderTable = () => {
                       </div>
                       <div>
                         <p className="text-gray-600 mb-1">Status</p>
-                        <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${selectedOrder.coupon.isActive
-                          ? "bg-[#0e540b]/20 text-[#0e540b]"
-                          : "bg-red-100 text-red-700"
-                          }`}>
-                          {selectedOrder.coupon.isActive ? "Active" : "Inactive"}
+                        <span
+                          className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                            selectedOrder.coupon.isActive
+                              ? "bg-[#0e540b]/20 text-[#0e540b]"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {selectedOrder.coupon.isActive
+                            ? "Active"
+                            : "Inactive"}
                         </span>
                       </div>
                     </div>
@@ -826,37 +909,53 @@ const OrderTable = () => {
 
                 {/* Price Breakdown */}
                 <div className="bg-white border-2 border-gray-200 rounded-xl p-4">
-                  <h4 className="font-semibold text-black mb-4">Price Breakdown</h4>
+                  <h4 className="font-semibold text-black mb-4">
+                    Price Breakdown
+                  </h4>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Vegetables Total</span>
-                      <span className="font-medium text-black">₹{selectedOrder.vegetablesTotal}</span>
+                      <span className="font-medium text-black">
+                        ₹{selectedOrder.vegetablesTotal}
+                      </span>
                     </div>
                     {selectedOrder.basketPrice > 0 && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Basket Price</span>
-                        <span className="font-medium text-[#0e540b]">₹{selectedOrder.basketPrice}</span>
+                        <span className="font-medium text-[#0e540b]">
+                          ₹{selectedOrder.basketPrice}
+                        </span>
                       </div>
                     )}
                     {selectedOrder.offerPrice > 0 && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Offer Price</span>
-                        <span className="font-medium text-[#d43900]">₹{selectedOrder.offerPrice}</span>
+                        <span className="font-medium text-[#d43900]">
+                          ₹{selectedOrder.offerPrice}
+                        </span>
                       </div>
                     )}
                     {selectedOrder.discount > 0 && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Discount</span>
-                        <span className="font-medium text-[#0e540b]">-₹{selectedOrder.discount}</span>
+                        <span className="font-medium text-[#0e540b]">
+                          -₹{selectedOrder.discount}
+                        </span>
                       </div>
                     )}
                     <div className="flex justify-between">
                       <span className="text-gray-600">Delivery Charges</span>
-                      <span className="font-medium text-black">₹{selectedOrder.deliveryCharges}</span>
+                      <span className="font-medium text-black">
+                        ₹{selectedOrder.deliveryCharges}
+                      </span>
                     </div>
                     <div className="flex justify-between pt-3 border-t-2 border-gray-200">
-                      <span className="text-lg font-bold text-black">Total Amount</span>
-                      <span className="text-2xl font-bold text-[#0e540b]">₹{selectedOrder.amount}</span>
+                      <span className="text-lg font-bold text-black">
+                        Total Amount
+                      </span>
+                      <span className="text-2xl font-bold text-[#0e540b]">
+                        ₹{selectedOrder.amount}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -872,13 +971,27 @@ const OrderTable = () => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-gray-50 border-b border-gray-200">
-                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Vegetable</th>
-                          <th className="px-4 py-3 text-center font-semibold text-gray-700">Weight</th>
-                          <th className="px-4 py-3 text-center font-semibold text-gray-700">Qty</th>
-                          <th className="px-4 py-3 text-right font-semibold text-gray-700">VegBazar</th>
-                          <th className="px-4 py-3 text-right font-semibold text-gray-700">Market</th>
-                          <th className="px-4 py-3 text-right font-semibold text-gray-700">Subtotal</th>
-                          <th className="px-4 py-3 text-right font-semibold text-gray-700">Savings</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                            Vegetable
+                          </th>
+                          <th className="px-4 py-3 text-center font-semibold text-gray-700">
+                            Weight
+                          </th>
+                          <th className="px-4 py-3 text-center font-semibold text-gray-700">
+                            Qty
+                          </th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">
+                            VegBazar
+                          </th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">
+                            Market
+                          </th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">
+                            Subtotal
+                          </th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">
+                            Savings
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
@@ -887,16 +1000,25 @@ const OrderTable = () => {
                           const marketPrice = veg.marketPrice || vegBazarPrice;
                           const subtotal = veg.subtotal || 0;
                           const totalMarketPrice = marketPrice * veg.quantity;
-                          const totalSavings = (totalMarketPrice - subtotal).toFixed(2);
-                          const savingsPercent = marketPrice > 0
-                            ? (((marketPrice - vegBazarPrice) / marketPrice) * 100).toFixed(1)
-                            : 0;
+                          const totalSavings = (
+                            totalMarketPrice - subtotal
+                          ).toFixed(2);
+                          const savingsPercent =
+                            marketPrice > 0
+                              ? (
+                                  ((marketPrice - vegBazarPrice) /
+                                    marketPrice) *
+                                  100
+                                ).toFixed(1)
+                              : 0;
 
                           return (
                             <tr key={index} className="hover:bg-gray-50">
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-medium text-black">{veg.name}</span>
+                                  <span className="font-medium text-black">
+                                    {veg.name}
+                                  </span>
                                   {veg.isFromBasket && (
                                     <span className="px-1.5 py-0.5 bg-[#0e540b]/10 text-[#0e540b] text-xs rounded">
                                       Basket
@@ -904,11 +1026,21 @@ const OrderTable = () => {
                                   )}
                                 </div>
                               </td>
-                              <td className="px-4 py-3 text-center text-gray-600">{veg.weight}</td>
-                              <td className="px-4 py-3 text-center font-medium text-black">{veg.quantity}</td>
-                              <td className="px-4 py-3 text-right font-medium text-black">₹{vegBazarPrice}</td>
-                              <td className="px-4 py-3 text-right text-gray-600">₹{marketPrice}</td>
-                              <td className="px-4 py-3 text-right font-bold text-[#0e540b]">₹{subtotal}</td>
+                              <td className="px-4 py-3 text-center text-gray-600">
+                                {veg.weight}
+                              </td>
+                              <td className="px-4 py-3 text-center font-medium text-black">
+                                {veg.quantity}
+                              </td>
+                              <td className="px-4 py-3 text-right font-medium text-black">
+                                ₹{vegBazarPrice}
+                              </td>
+                              <td className="px-4 py-3 text-right text-gray-600">
+                                ₹{marketPrice}
+                              </td>
+                              <td className="px-4 py-3 text-right font-bold text-[#0e540b]">
+                                ₹{subtotal}
+                              </td>
                               <td className="px-4 py-3 text-right">
                                 <span className="inline-block px-2 py-1 bg-[#0e540b]/10 text-[#0e540b] rounded text-xs font-bold">
                                   ₹{totalSavings} ({savingsPercent}%)
@@ -918,16 +1050,28 @@ const OrderTable = () => {
                           );
                         })}
                         <tr className="bg-gray-50 font-bold">
-                          <td colSpan="5" className="px-4 py-3 text-right text-black">Total:</td>
-                          <td className="px-4 py-3 text-right text-[#0e540b]">
-                            ₹{selectedOrder.vegetables.reduce((sum, v) => sum + (v.subtotal || 0), 0).toFixed(2)}
+                          <td
+                            colSpan="5"
+                            className="px-4 py-3 text-right text-black"
+                          >
+                            Total:
                           </td>
                           <td className="px-4 py-3 text-right text-[#0e540b]">
-                            ₹{selectedOrder.vegetables.reduce((sum, v) => {
-                              const marketPrice = v.marketPrice || v.vegBazarPrice;
-                              const totalMarket = marketPrice * v.quantity;
-                              return sum + (totalMarket - v.subtotal);
-                            }, 0).toFixed(2)}
+                            ₹
+                            {selectedOrder.vegetables
+                              .reduce((sum, v) => sum + (v.subtotal || 0), 0)
+                              .toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3 text-right text-[#0e540b]">
+                            ₹
+                            {selectedOrder.vegetables
+                              .reduce((sum, v) => {
+                                const marketPrice =
+                                  v.marketPrice || v.vegBazarPrice;
+                                const totalMarket = marketPrice * v.quantity;
+                                return sum + (totalMarket - v.subtotal);
+                              }, 0)
+                              .toFixed(2)}
                           </td>
                         </tr>
                       </tbody>
@@ -941,17 +1085,28 @@ const OrderTable = () => {
                       const marketPrice = veg.marketPrice || vegBazarPrice;
                       const subtotal = veg.subtotal || 0;
                       const totalMarketPrice = marketPrice * veg.quantity;
-                      const totalSavings = (totalMarketPrice - subtotal).toFixed(2);
-                      const savingsPercent = marketPrice > 0
-                        ? (((marketPrice - vegBazarPrice) / marketPrice) * 100).toFixed(1)
-                        : 0;
+                      const totalSavings = (
+                        totalMarketPrice - subtotal
+                      ).toFixed(2);
+                      const savingsPercent =
+                        marketPrice > 0
+                          ? (
+                              ((marketPrice - vegBazarPrice) / marketPrice) *
+                              100
+                            ).toFixed(1)
+                          : 0;
 
                       return (
-                        <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                        <div
+                          key={index}
+                          className="bg-gray-50 border border-gray-200 rounded-xl p-4"
+                        >
                           <div className="flex justify-between items-start mb-3">
                             <div>
                               <p className="font-bold text-black">{veg.name}</p>
-                              <p className="text-sm text-gray-600">{veg.weight} × {veg.quantity}</p>
+                              <p className="text-sm text-gray-600">
+                                {veg.weight} × {veg.quantity}
+                              </p>
                             </div>
                             <span className="px-2 py-1 bg-[#0e540b]/10 text-[#0e540b] rounded text-xs font-bold">
                               {savingsPercent}% OFF
@@ -959,8 +1114,12 @@ const OrderTable = () => {
                           </div>
                           <div className="grid grid-cols-2 gap-3 text-sm">
                             <div>
-                              <p className="text-gray-600 mb-1">VegBazar Price</p>
-                              <p className="font-bold text-black">₹{vegBazarPrice}</p>
+                              <p className="text-gray-600 mb-1">
+                                VegBazar Price
+                              </p>
+                              <p className="font-bold text-black">
+                                ₹{vegBazarPrice}
+                              </p>
                             </div>
                             <div>
                               <p className="text-gray-600 mb-1">Market Price</p>
@@ -968,11 +1127,15 @@ const OrderTable = () => {
                             </div>
                             <div>
                               <p className="text-gray-600 mb-1">Subtotal</p>
-                              <p className="font-bold text-[#0e540b]">₹{subtotal}</p>
+                              <p className="font-bold text-[#0e540b]">
+                                ₹{subtotal}
+                              </p>
                             </div>
                             <div>
                               <p className="text-gray-600 mb-1">You Save</p>
-                              <p className="font-bold text-[#0e540b]">₹{totalSavings}</p>
+                              <p className="font-bold text-[#0e540b]">
+                                ₹{totalSavings}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -1000,17 +1163,22 @@ const OrderTable = () => {
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-in zoom-in-95 duration-200">
               {/* Modal Header */}
-              <div className={`px-6 py-4 rounded-t-2xl ${pendingStatusChange.newStatus === "cancelled"
-                  ? "bg-gradient-to-r from-red-600 to-red-700"
-                  : "bg-gradient-to-r from-[#0e540b] to-[#0e540b]/90"
-                }`}>
+              <div
+                className={`px-6 py-4 rounded-t-2xl ${
+                  pendingStatusChange.newStatus === "cancelled"
+                    ? "bg-gradient-to-r from-red-600 to-red-700"
+                    : "bg-gradient-to-r from-[#0e540b] to-[#0e540b]/90"
+                }`}
+              >
                 <div className="flex items-center gap-3">
                   {pendingStatusChange.newStatus === "cancelled" ? (
                     <XCircle className="w-6 h-6 text-white" />
                   ) : (
                     <CheckCircle className="w-6 h-6 text-white" />
                   )}
-                  <h3 className="text-xl font-bold text-white">Confirm Status Change</h3>
+                  <h3 className="text-xl font-bold text-white">
+                    Confirm Status Change
+                  </h3>
                 </div>
               </div>
 
@@ -1018,12 +1186,16 @@ const OrderTable = () => {
               <div className="px-6 py-6">
                 <p className="text-gray-700 text-base mb-2">
                   Are you sure you want to mark this order as{" "}
-                  <span className={`font-bold ${pendingStatusChange.newStatus === "cancelled"
-                      ? "text-red-600"
-                      : "text-[#0e540b]"
-                    }`}>
+                  <span
+                    className={`font-bold ${
+                      pendingStatusChange.newStatus === "cancelled"
+                        ? "text-red-600"
+                        : "text-[#0e540b]"
+                    }`}
+                  >
                     {pendingStatusChange.newStatus}
-                  </span>?
+                  </span>
+                  ?
                 </p>
                 <p className="text-sm text-gray-500">
                   {pendingStatusChange.newStatus === "cancelled"
@@ -1042,10 +1214,11 @@ const OrderTable = () => {
                 </button>
                 <button
                   onClick={confirmStatusChange}
-                  className={`flex-1 px-4 py-2.5 rounded-lg text-white transition-colors text-sm font-medium ${pendingStatusChange.newStatus === "cancelled"
+                  className={`flex-1 px-4 py-2.5 rounded-lg text-white transition-colors text-sm font-medium ${
+                    pendingStatusChange.newStatus === "cancelled"
                       ? "bg-red-600 hover:bg-red-700"
                       : "bg-[#0e540b] hover:bg-[#0e540b]/90"
-                    }`}
+                  }`}
                 >
                   Confirm
                 </button>
